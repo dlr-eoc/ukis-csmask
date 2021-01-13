@@ -14,8 +14,7 @@ from .utils import (
     dice_coef,
     weighted_categorical_crossentropy,
     tile_array,
-    untile_array,
-    featurespace
+    untile_array
 )
 
 
@@ -78,36 +77,29 @@ class CSmask:
         :returns: cloud and cloud shadow mask (ndarray)
         """
         # set model parameters for valid mask segmentation
-        scaler_file = "./models/UNETMSB6A_VALID_scaler.pkl"
-        weights_file = "./models/UNETMSB6A_VALID_classweights.npy"
         model_file = "./models/UNETMSB6A_VALID.h5"
         model = load_model(
             model_file,
-            custom_objects={"dice_coef": dice_coef, "loss": weighted_categorical_crossentropy(np.load(weights_file))},
+            custom_objects={"dice_coef": dice_coef, "loss": weighted_categorical_crossentropy([1., 1., 1., 1., 1.])},
         )
 
         # tile array
-        array_tiled = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
+        X = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
 
-        if scaler_file:
-            # standardize feature space with scaler
-            X_tiled = featurespace(
-                array_tiled, standardize=True, save_scaler=False, load_scaler=True, scaler_file=scaler_file
-            )
-        else:
-            # use input array as is
-            X_tiled = array_tiled
+        # standardize feature space
+        X -= [0.19312382, 0.18659137, 0.18899422, 0.30362292, 0.2308511, 0.16216]
+        X /= [0.164318, 0.16762755, 0.1823059, 0.17409958, 0.16020508, 0.14164867]
 
         # predict in small batches to keep memory under control
         # prob_tiled = model.predict(X_tiled, batch_size=10, verbose=1)
         # NOTE: this is a workaround to avoid memory leak in tensorflow model.predict as of version 2.2.0
-        prob_tiled = np.empty((X_tiled.shape[0], X_tiled.shape[1], X_tiled.shape[2], 5), dtype=np.float32)
-        bi = np.arange(start=0, stop=X_tiled.shape[0], step=10)
-        bi = np.append(bi, X_tiled.shape[0])
+        prob_tiled = np.empty((X.shape[0], X.shape[1], X.shape[2], 5), dtype=np.float32)
+        bi = np.arange(start=0, stop=X.shape[0], step=10)
+        bi = np.append(bi, X.shape[0])
         for index in np.arange(len(bi) - 1):
             batch_start = bi[index]
             batch_end = bi[index + 1]
-            prob_tiled[batch_start:batch_end] = model.predict_on_batch(X_tiled[batch_start:batch_end])
+            prob_tiled[batch_start:batch_end] = model.predict_on_batch(X[batch_start:batch_end])
 
         # untile the probabilities with smooth blending
         prob = untile_array(
@@ -117,7 +109,6 @@ class CSmask:
         # compute argmax of probabilities to get class predictions
         pred = np.argmax(prob, axis=2).astype(np.uint8)
 
-        #
         # clear keras session
         K.clear_session()
 

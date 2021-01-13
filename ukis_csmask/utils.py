@@ -76,63 +76,6 @@ def weighted_categorical_crossentropy(weights):
     return loss
 
 
-def featurespace(array, standardize=True, save_scaler=False, load_scaler=False, scaler_file=None):
-    """Composes an image featurespace for a tiled array of shape (tiles, rows, cols, bands).
-
-    :param array: Numpy array of shape (tiles, rows, cols, bands) (Ndarray).
-    :param standardize: Apply data standardization (Boolean).
-    :param save_scaler: Save scaler file (Boolean).
-    :param load_scaler: Load scaler from file (Boolean).
-    :param scaler_file: Scaler file (String).
-    :returns: Reshaped and optionally standardized feature space (Ndarray).
-    """
-    X = []
-    for i in range(array.shape[0]):
-        band_list = []
-        array_toa = array[i, :, :, :]
-        for b in range(array_toa.shape[2]):
-            band_list.append(array_toa[:, :, b])
-        # put everything together
-        X_ = np.dstack(band_list)
-        X.append(X_)
-    X = np.array(X)
-
-    if standardize is True:
-        # standardize feature space in batches of 10000
-        # BUG: there is a bug in numpy related to large arrays with array_split() -> gives problems with reshape later
-        # FIX: https://github.com/numpy/numpy/pull/11813/files
-        # C:\Users\wiel_mc\AppData\Local\conda\conda\envs\pysatenv3\Lib\site-packages\numpy\lib\shape_base.py
-        X_ = np.reshape(X, (X.shape[0] * X.shape[1] * X.shape[2], X.shape[3]))
-        X_split = np.array_split(X_, int(X_.shape[0] / 100000.0), axis=0)
-
-        if load_scaler is True:
-            # load scaler from file
-            with open(scaler_file[:-4] + ".pkl", "rb") as f:
-                standard_scaler = pickle.load(f)
-        else:
-            # fit scaler on data
-            standard_scaler = StandardScaler(copy=False)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                for i in range(len(X_split)):
-                    standard_scaler.partial_fit(X_split[i])
-
-        # transform feature space
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            for i in range(len(X_split)):
-                X_split[i] = standard_scaler.transform(X_split[i], copy=False).astype(np.float16)
-        X_scaled = np.vstack(X_split)
-        X = np.reshape(X_scaled, X.shape)
-
-        if save_scaler is True:
-            # save scaler to file
-            with open(scaler_file[:-4] + ".pkl", "wb") as file:
-                pickle.dump(standard_scaler, file, protocol=2)
-
-    return X
-
-
 def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toend=True):
     """Applies a rolling (moving) window to a ndarray.
 

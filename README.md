@@ -42,7 +42,7 @@ csmask_csm = csmask.csm
 # access valid mask
 csmask_valid = csmask.valid
 
-# write result back to file with compression
+# write results back to file with compression
 csmask_csm.write_to_file("sentinel2_csm.tif", dtype=np.uint8, compression="PACKBITS")
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype=np.uint8, compression="PACKBITS", kwargs={"nbits":2})
 ````
