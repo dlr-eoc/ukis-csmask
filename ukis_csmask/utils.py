@@ -2,29 +2,24 @@ import numpy as np
 import scipy.signal
 
 
-def reclassify(classification, class_dict):
-    """Reclassifies a classification array to a binary pixel mask according to the rules provided in class_dict.
+def reclassify(array, class_dict):
+    """Reclassifies values in a ndarray according to the rules provided in class_dict.
 
-    :param classification: Numpy array that hold categorical class values (Ndarray).
-    :param class_dict: Dictionary that maps input class values to output class values (Dict). \n
+    :param array: Array that holds categorical class values. (ndarray).
+    :param class_dict: Dictionary that maps input class values to output class values. (dict). \n
 
     >>> class_dict = {
     >>>     "reclass_value_from":[0,1,2,3,4],
     >>>     "reclass_value_to":[0,1,0,0,0],
     >>> }
 
-    :returns: Numpy array with binary [0,1] class values (Ndarray).
+    :returns: Numpy array with binary [0,1] class values. (ndarray).
     """
-    # reclassify to valid pixel binary mask
-
-    # Shadow (0), Cloud (4), Snow (2) -> not valid (0)
-    # Water (1), Land (3) -> valid (1)
-
-    binary_pixel_mask = np.zeros((classification.shape[0], classification.shape[1], 1), dtype=np.uint8)
+    array_rec = np.zeros((array.shape[0], array.shape[1], 1), dtype=np.uint8)
     for i in range(len(class_dict["reclass_value_from"])):
-        binary_pixel_mask[classification == class_dict["reclass_value_from"][i]] = class_dict["reclass_value_to"][i]
+        array_rec[array == class_dict["reclass_value_from"][i]] = class_dict["reclass_value_to"][i]
 
-    return binary_pixel_mask.astype(np.uint8)
+    return array_rec.astype(np.uint8)
 
 
 def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toend=True):
@@ -140,14 +135,14 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
     return np.lib.stride_tricks.as_strided(array, shape=new_shape, strides=new_strides)
 
 
-def tile_array(array, xsize=512, ysize=512, overlap=0.1):
-    """Splits an ndarray into equally sized tiles with overlap.
+def tile_array(array, xsize=256, ysize=256, overlap=0.1):
+    """Splits a ndarray into equally sized tiles with overlap.
 
-    :param array: Numpy array of shape (rows, cols, bands) (Ndarray).
-    :param xsize: Xsize of tiles (Integer).
-    :param ysize: Ysize of tiles (Integer).
-    :param overlap: Overlap of tiles between 0.0 and 1.0 (Float).
-    :returns: Numpy array of shape(tiles, rows, cols, bands) (Ndarray)
+    :param array: Numpy array of shape (rows, cols, bands). (ndarray).
+    :param xsize: Xsize of tiles. (int).
+    :param ysize: Ysize of tiles. (int).
+    :param overlap: Overlap of tiles between 0.0 and 1.0. (float).
+    :returns: Numpy array of shape(tiles, rows, cols, bands). (ndarray).
     """
     # get dtype, rows, cols, bands and dtype from first file
     dtype = array.dtype
@@ -194,11 +189,11 @@ def tile_array(array, xsize=512, ysize=512, overlap=0.1):
 def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
     """Untiles an ndarray back into the original image size.
 
-    :param array_tiled: Numpy array of shape (tiles, rows, cols, bands) (Ndarray).
-    :param target_shape: Target shape (rows, cols, bands) (List of Integer).
-    :param overlap: Overlap of tiles between 0.0 and 1.0 (Float).
-    :param smooth_blending: Apply smooth tile blending (Boolean).
-    :returns: Numpy array of shape(rows, cols, bands) (Ndarray)
+    :param array_tiled: Numpy array of shape (tiles, rows, cols, bands). (ndarray).
+    :param target_shape: Target shape (rows, cols, bands). (list of int).
+    :param overlap: Overlap of tiles between 0.0 and 1.0. (float).
+    :param smooth_blending: Apply smooth tile blending. (bool).
+    :returns: Numpy array of shape(rows, cols, bands). (ndarray)
     """
     # get rows, cols, bands and dtype from first file
     dtype = array_tiled.dtype
@@ -234,9 +229,8 @@ def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
 
     if smooth_blending is True:
         if overlap > 0.5:
-            # for smooth blending to work overlap cannot be larger than 0.5.
-            print("ERROR: Overlap needs to be <=0.5 when using smooth blending.")
-            # exit()
+            raise ValueError("overlap needs to be <=0.5 when using smooth blending.")
+
         # define tapered cosine function (tukey) to be used for smooth blending
         window1d = scipy.signal.tukey(M=xsize, alpha=overlap * 2)
         window2d = np.expand_dims(np.expand_dims(window1d, axis=1), axis=2)
@@ -281,4 +275,5 @@ def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
     array_target = array_target[
         int(ysize * overlap) : int(ysize * overlap) + rows, int(xsize * overlap) : int(xsize * overlap) + cols, :
     ]
+
     return array_target.astype(dtype)

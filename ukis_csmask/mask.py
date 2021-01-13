@@ -13,13 +13,13 @@ class CSmask:
         self, img, band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], nodata_value=None,
     ):
         """
-        :param img: Input satellite image of shape (rows, cols, bands) (Ndarray).
+        :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
             Requires images of Sentinel-2, Landsat-8, -7 or -5 in Top of Atmosphere reflectance [0, 1].
             Requires image bands to include at least "Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2".
             Requires image bands to be in approximately 30 m resolution.
-        :param band_order: Image band order (Dict).
+        :param band_order: Image band order. (dict).
             >>> band_order = {0: "Blue", 1: "Green", 2: "Red", 3: "NIR", 4: "SWIR1", 5: "SWIR2"}
-        :param nodata_value: Additional nodata value that will be added to valid mask (Number).
+        :param nodata_value: Additional nodata value that will be added to valid mask. (num).
         """
         # consistency checks on input image
         if isinstance(img, np.ndarray) is False:
@@ -62,7 +62,8 @@ class CSmask:
 
     def _csm(self):
         """Computes cloud and cloud shadow mask with following class ids: 0=background, 1=clouds, 2=cloud shadows.
-        :returns: cloud and cloud shadow mask (ndarray)
+
+        :returns: cloud and cloud shadow mask. (ndarray).
         """
         # tile array
         x = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
@@ -89,8 +90,9 @@ class CSmask:
         # compute argmax of probabilities to get class predictions
         y = np.argmax(y_prob, axis=2).astype(np.uint8)
 
-        # TODO: reclassify results
-        csm = y
+        # reclassify results
+        class_dict = {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [2, 0, 0, 0, 1]}
+        csm = reclassify(y, class_dict)
 
         return csm
 
@@ -99,10 +101,11 @@ class CSmask:
         0=invalid (clouds, cloud shadows, nodata), 1=valid (rest). Invalid pixels are buffered to reduce effect of
         cloud and cloud shadow fuzzy boundaries. If CSmask was initialized with nodata_value it will be added to the
         invalid class.
-        :returns: binary valid mask (ndarray)
+
+        :returns: binary valid mask. (ndarray).
         """
         # reclassify cloud shadow mask to binary valid mask
-        class_dict = {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [0, 1, 0, 1, 0]}
+        class_dict = {"reclass_value_from": [0, 1, 2], "reclass_value_to": [1, 0, 0]}
         valid = reclassify(self.csm, class_dict)
 
         # dilate the inverse of the binary valid pixel mask (invalid=0)

@@ -42,10 +42,20 @@ csmask_csm = csmask.csm
 # access valid mask
 csmask_valid = csmask.valid
 
-# write results back to file with compression
-csmask_csm.write_to_file("sentinel2_csm.tif", dtype=np.uint8, compression="PACKBITS")
-csmask_valid.write_to_file("sentinel2_valid.tif", dtype=np.uint8, compression="PACKBITS", kwargs={"nbits":2})
+# convert results to UKIS-pysat Image
+csmask_csm = Image(csmask.csm, transform=img.dataset.transform, crs=img.dataset.crs, dimorder="last")
+csmask_valid = Image(csmask.valid, transform=img.dataset.transform, crs=img.dataset.crs, dimorder="last")
+
+# write back to file
+csmask_csm.write_to_file("sentinel2_csm.tif", dtype=np.uint8, compress="PACKBITS")
+csmask_valid.write_to_file("sentinel2_valid.tif", dtype=np.uint8, compress="PACKBITS", kwargs={"nbits":2})
 ````
+
+# get scene classification
+
+# get valid mask
+
+
 
 ## Installation
 The easiest way to install `csmask` is through pip.
