@@ -1,21 +1,9 @@
-import json
-import logging
 import numpy as np
-import os
+import onnxruntime
 
 from scipy import ndimage
-from ukis_pysat.raster import Image
-from ukis_pysat.members import Platform
 
-from tensorflow.keras.models import load_model
-from tensorflow.keras import backend as K
-from .utils import (
-    classification2binarymask,
-    dice_coef,
-    weighted_categorical_crossentropy,
-    tile_array,
-    untile_array
-)
+from .utils import reclassify, tile_array, untile_array
 
 
 class CSmask:
@@ -76,63 +64,54 @@ class CSmask:
         """Computes cloud and cloud shadow mask with following class ids: 0=background, 1=clouds, 2=cloud shadows.
         :returns: cloud and cloud shadow mask (ndarray)
         """
-        # set model parameters for valid mask segmentation
-        model_file = "./models/UNETMSB6A_VALID.h5"
-        model = load_model(
-            model_file,
-            custom_objects={"dice_coef": dice_coef, "loss": weighted_categorical_crossentropy([1., 1., 1., 1., 1.])},
-        )
-
         # tile array
-        X = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
+        x = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
 
         # standardize feature space
-        X -= [0.19312382, 0.18659137, 0.18899422, 0.30362292, 0.2308511, 0.16216]
-        X /= [0.164318, 0.16762755, 0.1823059, 0.17409958, 0.16020508, 0.14164867]
+        x -= [0.19312382, 0.18659137, 0.18899422, 0.30362292, 0.2308511, 0.16216]
+        x /= [0.164318, 0.16762755, 0.1823059, 0.17409958, 0.16020508, 0.14164867]
 
-        # predict in small batches to keep memory under control
-        # prob_tiled = model.predict(X_tiled, batch_size=10, verbose=1)
-        # NOTE: this is a workaround to avoid memory leak in tensorflow model.predict as of version 2.2.0
-        prob_tiled = np.empty((X.shape[0], X.shape[1], X.shape[2], 5), dtype=np.float32)
-        bi = np.arange(start=0, stop=X.shape[0], step=10)
-        bi = np.append(bi, X.shape[0])
-        for index in np.arange(len(bi) - 1):
-            batch_start = bi[index]
-            batch_end = bi[index + 1]
-            prob_tiled[batch_start:batch_end] = model.predict_on_batch(X[batch_start:batch_end])
+        # start onnx inference session and load model
+        so = onnxruntime.SessionOptions()
+        sess = onnxruntime.InferenceSession("./models/csm_unet.onnx")
 
-        # untile the probabilities with smooth blending
-        prob = untile_array(
-            prob_tiled, (self.img.shape[0], self.img.shape[1], prob_tiled.shape[3]), overlap=0.2, smooth_blending=True
+        # predict on array tiles
+        x = x if isinstance(x, list) else [x]
+        feed = dict([(input.name, x[n]) for n, input in enumerate(sess.get_inputs())])
+        y_prob = sess.run(None, feed)
+        y_prob = np.concatenate(y_prob)
+
+        # untile probabilities with smooth blending
+        y_prob = untile_array(
+            y_prob, (self.img.shape[0], self.img.shape[1], y_prob.shape[3]), overlap=0.2, smooth_blending=True
         )
 
         # compute argmax of probabilities to get class predictions
-        pred = np.argmax(prob, axis=2).astype(np.uint8)
+        y = np.argmax(y_prob, axis=2).astype(np.uint8)
 
-        # clear keras session
-        K.clear_session()
+        # TODO: reclassify results
+        csm = y
 
-        return pred
+        return csm
 
     def _valid(self):
-        """Converts the cloud shadow mask into a binary valid mask. This sets cloud and cloud shadow pixels to 0
-        (invalid) and background to 1 (valid). Invalid pixels are buffered to reduce effect of cloud and shadow borders.
-        Optionally image nodata values can be added to mask.
+        """Converts the cloud and cloud shadow mask into a binary valid mask with following class ids:
+        0=invalid (clouds, cloud shadows, nodata), 1=valid (rest). Invalid pixels are buffered to reduce effect of
+        cloud and cloud shadow fuzzy boundaries. If CSmask was initialized with nodata_value it will be added to the
+        invalid class.
         :returns: binary valid mask (ndarray)
         """
         # reclassify cloud shadow mask to binary valid mask
-        # Shadow (0), Cloud (4), Snow (2) -> not valid (0)
-        # Water (1), Land (3) -> valid (1)
         class_dict = {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [0, 1, 0, 1, 0]}
-        msk = classification2binarymask(self.csm, class_dict)
+        valid = reclassify(self.csm, class_dict)
 
         # dilate the inverse of the binary valid pixel mask (invalid=0)
         # this effectively buffers the invalid pixels
-        msk_i = ~msk.astype(np.bool)
-        msk = (~ndimage.binary_dilation(msk_i, iterations=4).astype(np.bool)).astype(np.uint8)
+        valid_i = ~valid.astype(np.bool)
+        valid = (~ndimage.binary_dilation(valid_i, iterations=4).astype(np.bool)).astype(np.uint8)
 
         if self.nodata_value is not None:
             # add image nodata pixels to valid pixel mask
-            msk[(self.img[:, :, 0] == msk[self.nodata_value])] = 0
+            valid[(self.img[:, :, 0] == valid[self.nodata_value])] = 0
 
-        return msk
+        return valid

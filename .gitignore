@@ -10,3 +10,4 @@
 /models
 /tests/testfiles
 test.py
+keras2onnx.py

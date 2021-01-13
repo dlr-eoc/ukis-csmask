@@ -1,20 +1,8 @@
-import geojson
 import numpy as np
-import os
-import pickle
 import scipy.signal
-import warnings
-
-from tensorflow.keras import backend as K
 
 
-import itertools
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm
-from matplotlib import gridspec
-
-
-def classification2binarymask(classification, class_dict):
+def reclassify(classification, class_dict):
     """Reclassifies a classification array to a binary pixel mask according to the rules provided in class_dict.
 
     :param classification: Numpy array that hold categorical class values (Ndarray).
@@ -28,52 +16,15 @@ def classification2binarymask(classification, class_dict):
     :returns: Numpy array with binary [0,1] class values (Ndarray).
     """
     # reclassify to valid pixel binary mask
+
+    # Shadow (0), Cloud (4), Snow (2) -> not valid (0)
+    # Water (1), Land (3) -> valid (1)
+
     binary_pixel_mask = np.zeros((classification.shape[0], classification.shape[1], 1), dtype=np.uint8)
     for i in range(len(class_dict["reclass_value_from"])):
         binary_pixel_mask[classification == class_dict["reclass_value_from"][i]] = class_dict["reclass_value_to"][i]
 
     return binary_pixel_mask.astype(np.uint8)
-
-
-def dice_coef(y_true, y_pred):
-    """Computes the Dice Coefficient.
-
-    :param y_true: Numpy array that holds true categorical class values (Ndarray).
-    :param y_pred: Numpy array that holds predicted categorical class values (Ndarray).
-    :returns: Dice coefficient (Float).
-    """
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
-    intersection = K.sum(y_true_f * y_pred_f)
-    smooth = 1.0
-    return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-
-
-def weighted_categorical_crossentropy(weights):
-    """Computes the weighted categorical crossentropy loss.
-
-    :param weights: Numpy array of shape (C,) where C is the number of classes (Ndarray).
-    :returns: weighted categorical crossentropy (Float).
-
-    Example: \n
-    >>> # Class one at 0.5, class 2 twice the normal weights, class 3 10x.
-    >>> weights = np.array([0.5,2,10])
-    >>> loss = weighted_categorical_crossentropy(weights)
-    >>> model.compile(loss=loss,optimizer='adam')
-    """
-    weights = K.variable(weights)
-
-    def loss(y_true, y_pred):
-        # scale predictions so that the class probas of each sample sum to 1
-        y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
-        # clip to prevent NaN's and Inf's
-        y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon())
-        # calc
-        loss = y_true * K.log(y_pred) * weights
-        loss = -K.sum(loss, -1)
-        return loss
-
-    return loss
 
 
 def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toend=True):
@@ -331,159 +282,3 @@ def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
         int(ysize * overlap) : int(ysize * overlap) + rows, int(xsize * overlap) : int(xsize * overlap) + cols, :
     ]
     return array_target.astype(dtype)
-
-
-def plot_img_msk_pred(img, msk=None, pred=None, valid=None, histogram=False, n=1, title=None):
-    """This function plots batches of images with respective binary masks, predictions
-    and histograms.
-
-    :param img: Images (Ndarray).
-    :param msk: True masks (Ndarray).
-    :param pred: Predicted masks (Ndarray).
-    :param valid: Valid masks (Ndarray).
-    :param histogramm: Plot histograms (Boolean).
-    :param n: Number of images to plot (Integer).
-    :param title: Plot title (String).
-
-    :returns: Plot (Object).
-    """
-    # initiate figure layout
-    cols = 1
-    if msk is not None:
-        cols += 1
-    if pred is not None:
-        cols += 1
-    if histogram is True:
-        cols += 1
-    rows = n
-    width_ratios = [1] * cols
-
-    if img.shape[1] == 1:
-        img_idx = (0, 0, 0)
-    elif img.shape[1] == 2:
-        img_idx = (0, 1, 1)
-    else:
-        img_idx = (0, 1, 2)
-
-    fig = plt.figure(figsize=(cols, rows))
-
-    if title:
-        # add title to figure
-        fig.suptitle(title)
-        top_space = 0.75
-    else:
-        top_space = 0.95
-
-    # https://stackoverflow.com/questions/41071947/how-to-remove-the-space-between-subplots-in-matplotlib-pyplot
-    gs = gridspec.GridSpec(
-        rows, cols, width_ratios=width_ratios, wspace=0.05, hspace=0.05, top=top_space, bottom=0.05, left=0.05, right=0.95
-    )
-
-    if valid is not None:
-        # apply valid mask to img, msk and pred
-        for i in range(rows):
-            for b in range(img.shape[1]):
-                img[i, b, :, :][valid[i, 0, :, :] == 0] = 0
-        msk[valid == 0] = 2
-        pred[valid == 0] = 2
-        cm_multi = ListedColormap(["#9e9e9e", "#000080", "#000000"])
-        norm = BoundaryNorm([0, 0.5, 1.5, 2], cm_multi.N)
-    else:
-        # plot img, msk and pred as are
-        cm_multi = ListedColormap(["#ffffff", "#000000"])
-        norm = BoundaryNorm([0, 0.5, 1], cm_multi.N)
-
-    img_flat = np.ravel(img)
-    img_minmax = [np.nanmin(img_flat), np.nanmax(img_flat)]
-
-    for i in range(rows):
-        # prepare rgb composite of img
-        # NOTE: pytorch uses dimorder (channels, rows, cols)
-        r = (
-            (img[i, img_idx[0], :, :] - img[i, img_idx[0], :, :].min())
-            * (1 / (img[i, img_idx[0], :, :].max() - img[i, img_idx[0], :, :].min() + 1e-8) * 255)
-        ).astype(np.uint8)
-        g = (
-            (img[i, img_idx[1], :, :] - img[i, img_idx[1], :, :].min())
-            * (1 / (img[i, img_idx[1], :, :].max() - img[i, img_idx[1], :, :].min() + 1e-8) * 255)
-        ).astype(np.uint8)
-        b = (
-            (img[i, img_idx[2], :, :] - img[i, img_idx[2], :, :].min())
-            * (1 / (img[i, img_idx[2], :, :].max() - img[i, img_idx[2], :, :].min() + 1e-8) * 255)
-        ).astype(np.uint8)
-        rgb = np.dstack((r, g, b))
-
-        # plot image
-        ax1 = plt.subplot(gs[i, 0])
-        ax1.imshow(rgb)
-        ax1.set_xticklabels([])
-        ax1.set_xticks([])
-        ax1.set_yticklabels([])
-        ax1.set_yticks([])
-        if i + 1 == rows:
-            # add xaxis label on last row
-            ax1.set_xlabel("Image", labelpad=7)
-
-        if msk is not None:
-            # plot mask
-            ax2 = plt.subplot(gs[i, 1])
-            ax2.imshow(msk[i, 0, :, :], cmap=cm_multi, norm=norm)
-            ax2.set_xticklabels([])
-            ax2.set_xticks([])
-            ax2.set_yticklabels([])
-            ax2.set_yticks([])
-            if i + 1 == rows:
-                # add xaxis label on last row
-                ax2.set_xlabel("True Mask", labelpad=7)
-
-        if pred is not None:
-            # plot prediction
-            ax3 = plt.subplot(gs[i, 2])
-            ax3.imshow(pred[i, 0, :, :], cmap=cm_multi, norm=norm)
-            ax3.set_xticklabels([])
-            ax3.set_xticks([])
-            ax3.set_yticklabels([])
-            ax3.set_yticks([])
-            if i + 1 == rows:
-                # add xaxis label on last row
-                ax3.set_xlabel("Pred Mask", labelpad=7)
-
-        if histogram is True:
-            # plot histogram
-            ax3 = plt.subplot(gs[i, cols - 1])
-            ax3.hist(
-                np.ravel(img[i, img_idx[2], :, :]),
-                bins="auto",
-                range=img_minmax,
-                color="#ff0000",
-                histtype="stepfilled",
-                alpha=0.3,
-                density=True,
-                label="R",
-            )
-            ax3.hist(
-                np.ravel(img[i, img_idx[1], :, :]),
-                bins="auto",
-                range=img_minmax,
-                color="#00ff00",
-                histtype="stepfilled",
-                alpha=0.3,
-                density=True,
-                label="G",
-            )
-            ax3.hist(
-                np.ravel(img[i, img_idx[0], :, :]),
-                bins="auto",
-                range=img_minmax,
-                color="#0000ff",
-                histtype="stepfilled",
-                alpha=0.3,
-                density=True,
-                label="B",
-            )
-            if i + 1 != rows:
-                # add x-axis labels and tick on last row
-                ax3.set_xticklabels([])
-                ax3.set_xticks([])
-            ax3.set_yticklabels([])
-            ax3.set_yticks([])
