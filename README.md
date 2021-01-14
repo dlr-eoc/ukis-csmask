@@ -1,4 +1,4 @@
-# [![UKIS](https://raw.githubusercontent.com/dlr-eoc/ukis-csmask/master/img/ukis-logo.png)](https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5413/10560_read-21914/) ukis-csmask
+# [![UKIS](img/ukis-logo.png)](https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5413/10560_read-21914/) ukis-csmask
 
 ![Build Status](https://github.com/dlr-eoc/ukis-csmask/workflows/build/badge.svg)
 [![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -10,6 +10,8 @@ This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further i
 > Wieland, M.; Li, Y.; Martinis, S. Multi-sensor cloud and cloud shadow segmentation with a convolutional
 neural network. *Remote Sensing of Environment*, 2019, 230, 1-12. [https://doi.org/10.1016/j.rse.2019.05.022](https://doi.org/10.1016/j.rse.2019.05.022)
 
+![Examples](img/examples.png)
+
 ## Example
 Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [UKIS-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with NUMPY arrays.
 
@@ -17,9 +19,8 @@ Here's an example on how to compute a cloud and cloud shadow mask from an image.
 from ukis-csmask.mask import CSmask
 from ukis-pysat.raster import Image, Platform
 
-# load Level-1C image from file, convert digital numbers to TOA reflectance
+# read Level-1C image from file, convert digital numbers to TOA reflectance
 # and make sure resolution is 30 m to get best performance
-# NOTE: here we use UKIS-pysat for convenience but plain numpy is also fine
 img = Image(data="sentinel2.tif", dimorder="last")
 img.dn2toa(platform=Platform.Sentinel2)
 img.warp(
@@ -29,7 +30,8 @@ img.warp(
 )
 
 # compute cloud and cloud shadow mask
-# NOTE: band_order must match the order of bands in the input image, but does not have to be in this explicit order
+# NOTE: band_order must match the order of bands in the input image,
+# but it does not have to be in this explicit order
 csmask = CSmask(
     img=img.arr,
     band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"],
@@ -46,16 +48,10 @@ csmask_valid = csmask.valid
 csmask_csm = Image(csmask.csm, transform=img.dataset.transform, crs=img.dataset.crs, dimorder="last")
 csmask_valid = Image(csmask.valid, transform=img.dataset.transform, crs=img.dataset.crs, dimorder="last")
 
-# write back to file
+# write results back to file
 csmask_csm.write_to_file("sentinel2_csm.tif", dtype=np.uint8, compress="PACKBITS")
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype=np.uint8, compress="PACKBITS", kwargs={"nbits":2})
 ````
-
-# get scene classification
-
-# get valid mask
-
-
 
 ## Installation
 The easiest way to install `csmask` is through pip.
