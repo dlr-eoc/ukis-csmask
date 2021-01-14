@@ -6,8 +6,6 @@
 .coverage
 /docs/build/
 
-
-/models
 /img_raw
 /tests/testfiles
 test.py
