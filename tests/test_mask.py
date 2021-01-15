@@ -1,58 +1,78 @@
-import inspect
 import numpy as np
-import os
 import pytest
 import sys
 
-# enable relative import of package
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
+from pathlib import Path
+from scipy import ndimage
+
+sys.path.insert(0, str(Path().resolve()))
 
 from ukis_csmask.mask import CSmask
+from ukis_csmask.utils import reclassify, cohen_kappa_score
 
 
-def test_csmask_init():
-    # correct inputs
-    CSmask(img=np.empty((20, 20, 6), dtype=np.float32))
-    CSmask(img=np.empty((20, 20, 6), dtype=np.float32), band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"])
-    CSmask(
-        img=np.empty((20, 20, 6), dtype=np.float32),
-        band_order=["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2", "NIR2", "WHATEVER"],
-    )
-    CSmask(
-        img=np.empty((20, 20, 6), dtype=np.float32),
-        band_order=["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"],
-        nodata_value=-666,
-    )
+@pytest.mark.parametrize(
+    "img, band_order, nodata_value",
+    [
+        (np.empty((20, 20, 6), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((20, 20, 8), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2", "NIR2", "ETC"], None),
+        (np.empty((20, 20, 6), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"], -666),
+    ],
+)
+def test_csmask_init(img, band_order, nodata_value):
+    CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
 
-    # wrong inputs
+
+@pytest.mark.parametrize(
+    "img, band_order, nodata_value",
+    [
+        (3, ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((20, 20), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((20, 20, 3), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((20, 20, 6), np.uint8), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((20, 20, 6), np.float32), ["Blue", "Green", "Yellow", "NIR", "SWIR1", "SWIR2"], None),
+    ],
+)
+def test_csmask_init_raises(img, band_order, nodata_value):
     with pytest.raises(TypeError):
-        CSmask(img=3)
-
-    with pytest.raises(TypeError):
-        CSmask(img=np.empty((20, 20), dtype=np.float32))
-
-    with pytest.raises(TypeError):
-        CSmask(img=np.empty((20, 20, 3), dtype=np.float32))
-
-    with pytest.raises(TypeError):
-        CSmask(img=np.empty((20, 20, 6), dtype=np.uint8))
-
-    with pytest.raises(TypeError):
-        CSmask(img=np.empty((20, 20, 6), dtype=np.uint8))
-
-    with pytest.raises(TypeError):
-        CSmask(
-            img=np.empty((20, 20, 6), dtype=np.float32), band_order=["Blue", "Green", "Yellow", "NIR", "SWIR1", "SWIR2"]
-        )
+        CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
 
 
-def test_csmask_csm():
-    # run csm computation with all testfiles and compare to expected results (kappa > 0.9)
-    pass
+@pytest.mark.parametrize(
+    "data",
+    [
+        np.load("tests/testfiles/sentinel2.npz"),
+        np.load("tests/testfiles/landsat8.npz"),
+        np.load("tests/testfiles/landsat7.npz"),
+        np.load("tests/testfiles/landsat5.npz"),
+    ],
+)
+def test_csmask_csm(data):
+    csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"])
+    y_pred = csmask.csm
+    y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [2, 0, 0, 0, 1]})
+    y_true = y_true.ravel()
+    y_pred = y_pred.ravel()
+    kappa = round(cohen_kappa_score(y_true, y_pred), 2)
+    assert kappa >= 0.75
 
 
-def test_csmask_valid():
-    # run csm computation with all testfiles and compare to expected results (kappa > 0.9)
-    pass
+@pytest.mark.parametrize(
+    "data",
+    [
+        np.load("tests/testfiles/sentinel2.npz"),
+        np.load("tests/testfiles/landsat8.npz"),
+        np.load("tests/testfiles/landsat7.npz"),
+        np.load("tests/testfiles/landsat5.npz"),
+    ],
+)
+def test_csmask_valid(data):
+    csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"])
+    y_pred = csmask.valid
+    y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [0, 1, 1, 1, 0]})
+    y_true_inverted = ~y_true.astype(np.bool)
+    y_true = (~ndimage.binary_dilation(y_true_inverted, iterations=4).astype(np.bool)).astype(np.uint8)
+    y_true = y_true.ravel()
+    y_pred = y_pred.ravel()
+    kappa = round(cohen_kappa_score(y_true, y_pred), 2)
+    assert kappa >= 0.75

@@ -6,14 +6,14 @@
 
 UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red", "NIR", "SWIR1" and "SWIR2" spectral bands.
 
-This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset. If you use UKIS-csmask in your work, please consider citing us as follows.
+This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset. If you use ukis-csmask in your work, please consider citing us as follows.
 > Wieland, M.; Li, Y.; Martinis, S. Multi-sensor cloud and cloud shadow segmentation with a convolutional
 neural network. *Remote Sensing of Environment*, 2019, 230, 1-12. [https://doi.org/10.1016/j.rse.2019.05.022](https://doi.org/10.1016/j.rse.2019.05.022)
 
 ![Examples](img/examples.png)
 
 ## Example
-Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [UKIS-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with NUMPY arrays.
+Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [ukis-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with NUMPY arrays.
 
 ````python
 from ukis-csmask.mask import CSmask
@@ -30,8 +30,8 @@ img.warp(
 )
 
 # compute cloud and cloud shadow mask
-# NOTE: band_order must match the order of bands in the input image,
-# but it does not have to be in this explicit order
+# NOTE: band_order must match the order of bands in the input image. it does not have to be in this explicit order,
+# but needs to include these six spectral bands.
 csmask = CSmask(
     img=img.arr,
     band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"],
@@ -54,13 +54,13 @@ csmask_valid.write_to_file("sentinel2_valid.tif", dtype=np.uint8, compress="PACK
 ````
 
 ## Installation
-The easiest way to install `csmask` is through pip.
+The easiest way to install ukis-csmask is through pip.
 
 ```shell
 pip install ukis-csmask
 ```
 
-For the latest list of dependencies check the [requirements](https://github.com/dlr-eoc/ukis-csmask/blob/master/requirements.txt).
+For a list of dependencies check the [requirements](https://github.com/dlr-eoc/ukis-csmask/blob/main/requirements.txt).
 
 ## Contributors
 The UKIS team creates and adapts libraries which simplify the usage of satellite data. Our team includes (in alphabetical order):
@@ -74,16 +74,16 @@ The UKIS team creates and adapts libraries which simplify the usage of satellite
 German Aerospace Center (DLR)
 
 ## Licenses
-This software is licensed under the [Apache 2.0 License](https://github.com/dlr-eoc/ukis-csmask/blob/master/LICENSE).
+This software is licensed under the [Apache 2.0 License](https://github.com/dlr-eoc/ukis-csmask/blob/main/LICENSE).
 
 Copyright (c) 2020 German Aerospace Center (DLR) * German Remote Sensing Data Center * Department: Geo-Risks and Civil Security
 
 ## Changelog
-See [changelog](https://github.com/dlr-eoc/ukis-csmask/blob/master/CHANGELOG.rst).
+See [changelog](https://github.com/dlr-eoc/ukis-csmask/blob/main/CHANGELOG.rst).
 
 ## Contributing
 The UKIS team welcomes contributions from the community.
-For more detailed information, see our guide on [contributing](https://github.com/dlr-eoc/ukis-csmask/blob/master/CONTRIBUTING.md) if you're interested in getting involved.
+For more detailed information, see our guide on [contributing](https://github.com/dlr-eoc/ukis-csmask/blob/main/CONTRIBUTING.md) if you're interested in getting involved.
 
 ## What is UKIS?
 The DLR project Environmental and Crisis Information System (the German abbreviation is UKIS, standing for [Umwelt- und Kriseninformationssysteme](https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5413/10560_read-21914/) aims at harmonizing the development of information systems at the German Remote Sensing Data Center (DFD) and setting up a framework of modularized and generalized software components.

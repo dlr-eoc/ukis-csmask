@@ -69,8 +69,8 @@ class CSmask:
         x = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
 
         # standardize feature space
-        x -= [0.19312382, 0.18659137, 0.18899422, 0.30362292, 0.2308511, 0.16216]
-        x /= [0.164318, 0.16762755, 0.1823059, 0.17409958, 0.16020508, 0.14164867]
+        x -= [0.19312, 0.18659, 0.18899, 0.30362, 0.23085, 0.16216]
+        x /= [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
 
         # start onnx inference session and load model
         so = onnxruntime.SessionOptions()

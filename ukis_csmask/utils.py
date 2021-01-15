@@ -277,3 +277,37 @@ def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
     ]
 
     return array_target.astype(dtype)
+
+
+def cohen_kappa_score(y_true, y_pred):
+    """Computes Cohens Kappa Score.
+
+    :param y_true: Array that holds true class values. (ndarray).
+    :param y_pred: Array that holds predicted class values. (ndarray).
+    :returns: Cohens Kappa Score. (Float).
+    """
+    if y_true.shape != y_pred.shape:
+        raise TypeError("y_true.shape must match y_pred.shape")
+
+    po = (y_true == y_pred).astype(np.float32).mean()
+    classes = sorted(set(list(np.concatenate((y_true, y_pred), axis=0))))
+
+    mp = {}
+    for i, c in enumerate(classes):
+        mp[c] = i
+    k = len(mp)
+
+    sa = np.zeros(shape=(k,), dtype=np.int32)
+    sb = np.zeros(shape=(k,), dtype=np.int32)
+    n = y_true.shape[0]
+    for x, y in zip(list(y_true), list(y_pred)):
+        sa[mp[x]] += 1
+        sb[mp[y]] += 1
+
+    pe = 0
+    for i in range(k):
+        pe += (sa[i] / n) * (sb[i] / n)
+
+    kappa = (po - pe) / (1.0 - pe)
+
+    return kappa

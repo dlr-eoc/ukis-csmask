@@ -1,5 +1,4 @@
 *.pyc
 
 /img_raw
-/tests/testfiles
 test.py
