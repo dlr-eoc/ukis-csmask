@@ -28,3 +28,11 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+        coverage run -m pytest
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        file: coverage.xml
+        flags: pytest
+        name: codecov-umbrella-ukis-csmask
