@@ -1,8 +1,8 @@
+import sys
+from pathlib import Path
+
 import numpy as np
 import pytest
-import sys
-
-from pathlib import Path
 from scipy import ndimage
 
 sys.path.insert(0, str(Path().resolve()))
@@ -41,10 +41,10 @@ def test_csmask_init_raises(img, band_order, nodata_value):
 @pytest.mark.parametrize(
     "data",
     [
-        np.load("tests/testfiles/sentinel2.npz"),
-        np.load("tests/testfiles/landsat8.npz"),
-        np.load("tests/testfiles/landsat7.npz"),
-        np.load("tests/testfiles/landsat5.npz"),
+        np.load(r"tests/testfiles/sentinel2.npz"),
+        np.load(r"tests/testfiles/landsat8.npz"),
+        np.load(r"tests/testfiles/landsat7.npz"),
+        np.load(r"tests/testfiles/landsat5.npz"),
     ],
 )
 def test_csmask_csm(data):
@@ -60,10 +60,10 @@ def test_csmask_csm(data):
 @pytest.mark.parametrize(
     "data",
     [
-        np.load("tests/testfiles/sentinel2.npz"),
-        np.load("tests/testfiles/landsat8.npz"),
-        np.load("tests/testfiles/landsat7.npz"),
-        np.load("tests/testfiles/landsat5.npz"),
+        np.load(r"tests/testfiles/sentinel2.npz"),
+        np.load(r"tests/testfiles/landsat8.npz"),
+        np.load(r"tests/testfiles/landsat7.npz"),
+        np.load(r"tests/testfiles/landsat5.npz"),
     ],
 )
 def test_csmask_valid(data):

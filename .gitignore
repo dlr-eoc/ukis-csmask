@@ -2,3 +2,10 @@
 
 /img_raw
 test.py
+
+/.idea
+
+/dist
+/build
+*.egg-info
+/*.egg

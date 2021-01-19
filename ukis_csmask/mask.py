@@ -1,6 +1,5 @@
 import numpy as np
 import onnxruntime
-
 from scipy import ndimage
 
 from .utils import reclassify, tile_array, untile_array
@@ -10,7 +9,7 @@ class CSmask:
     """Segments clouds and cloud shadows in multi-spectral satellite images."""
 
     def __init__(
-        self, img, band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], nodata_value=None,
+        self, img, band_order=None, nodata_value=None,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
@@ -22,6 +21,9 @@ class CSmask:
         :param nodata_value: Additional nodata value that will be added to valid mask. (num).
         """
         # consistency checks on input image
+        if band_order is None:
+            band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+
         if isinstance(img, np.ndarray) is False:
             raise TypeError("img must be of type np.ndarray")
 
@@ -73,12 +75,11 @@ class CSmask:
         x /= [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
 
         # start onnx inference session and load model
-        so = onnxruntime.SessionOptions()
         sess = onnxruntime.InferenceSession("./models/csm_unet.onnx")
 
         # predict on array tiles
         x = x if isinstance(x, list) else [x]
-        feed = dict([(input.name, x[n]) for n, input in enumerate(sess.get_inputs())])
+        feed = dict([(inp.name, x[n]) for n, inp in enumerate(sess.get_inputs())])
         y_prob = sess.run(None, feed)
         y_prob = np.concatenate(y_prob)
 

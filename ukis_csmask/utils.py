@@ -144,14 +144,9 @@ def tile_array(array, xsize=256, ysize=256, overlap=0.1):
     :param overlap: Overlap of tiles between 0.0 and 1.0. (float).
     :returns: Numpy array of shape(tiles, rows, cols, bands). (ndarray).
     """
-    # get dtype, rows, cols, bands and dtype from first file
+    # get dtype and bands from first file
     dtype = array.dtype
-    rows = array.shape[0]
-    cols = array.shape[1]
-    if array.ndim == 3:
-        bands = array.shape[2]
-    elif array.ndim == 2:
-        bands = 1
+    bands = array.shape[2] if array.ndim == 3 else 1
 
     # get steps
     xsteps = int(xsize - (xsize * overlap))
@@ -175,15 +170,15 @@ def tile_array(array, xsize=256, ysize=256, overlap=0.1):
     # tile the data into overlapping patches
     # this skips any tile at the end of row and col that exceeds the shape of the input array
     # therefore padding the input array is needed beforehand
-    X_ = rolling_window(array, (xsize, ysize, bands), asteps=(xsteps, ysteps, bands))
+    x_ = rolling_window(array, (xsize, ysize, bands), asteps=(xsteps, ysteps, bands))
 
     # access single tiles and write them to file and/or to ndarray of shape (tiles, rows, cols, bands)
-    X = []
-    for i in range(X_.shape[0]):
-        for j in range(X_.shape[1]):
-            X.append(X_[i, j, 0, :, :, :])
+    x = []
+    for i in range(x_.shape[0]):
+        for j in range(x_.shape[1]):
+            x.append(x_[i, j, 0, :, :, :])
 
-    return np.asarray(X, dtype=dtype)
+    return np.asarray(x, dtype=dtype)
 
 
 def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
@@ -223,11 +218,11 @@ def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
     )
 
     # get xtiles and ytiles
-    X_ = rolling_window(array_target, (xsize, ysize, bands), asteps=(xsteps, ysteps, bands))
-    xtiles = int(X_.shape[0])
-    ytiles = int(X_.shape[1])
+    x_ = rolling_window(array_target, (xsize, ysize, bands), asteps=(xsteps, ysteps, bands))
+    xtiles = int(x_.shape[0])
+    ytiles = int(x_.shape[1])
 
-    if smooth_blending is True:
+    if smooth_blending:
         if overlap > 0.5:
             raise ValueError("overlap needs to be <=0.5 when using smooth blending.")
 
