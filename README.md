@@ -2,6 +2,7 @@
 
 ![ukis-csmask](https://github.com/dlr-eoc/ukis-csmask/workflows/ukis-csmask/badge.svg)
 [![codecov](https://codecov.io/gh/dlr-eoc/ukis-csmask/branch/main/graph/badge.svg)](https://codecov.io/gh/dlr-eoc/ukis-csmask)
+![Upload Python Package](https://github.com/dlr-eoc/ukis-csmask/workflows/Upload%20Python%20Package/badge.svg)
 [![PyPI version](https://img.shields.io/pypi/v/ukis-csmask)](https://pypi.python.org/pypi/ukis-csmask/)
 [![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
