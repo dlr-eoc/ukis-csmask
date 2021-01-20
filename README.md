@@ -16,8 +16,8 @@ neural network. *Remote Sensing of Environment*, 2019, 230, 1-12. [https://doi.o
 Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [ukis-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with NUMPY arrays.
 
 ````python
-from ukis-csmask.mask import CSmask
-from ukis-pysat.raster import Image, Platform
+from ukis_csmask.mask import CSmask
+from ukis_pysat.raster import Image, Platform
 
 # read Level-1C image from file, convert digital numbers to TOA reflectance
 # and make sure resolution is 30 m to get best performance

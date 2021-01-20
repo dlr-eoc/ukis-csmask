@@ -1,5 +1,6 @@
 import numpy as np
 import onnxruntime
+from pathlib import Path
 from scipy import ndimage
 
 from .utils import reclassify, tile_array, untile_array
@@ -75,7 +76,7 @@ class CSmask:
         x /= [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
 
         # start onnx inference session and load model
-        sess = onnxruntime.InferenceSession("./models/csm_unet.onnx")
+        sess = onnxruntime.InferenceSession(str(Path(__file__).parent) + "/model.onnx")
 
         # predict on array tiles
         x = x if isinstance(x, list) else [x]
