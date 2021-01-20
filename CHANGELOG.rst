@@ -16,6 +16,14 @@ something was changed
 [master]  (2021-**-**)
 ----------------------
 
+[0.1.1-beta]  (2021-01-20)
+---------------------
+
+Fixed
+*******
+- missing datafile for onnx model
+
+
 [0.1.0-beta]  (2021-01-20)
 ---------------------
 
