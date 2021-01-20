@@ -31,7 +31,7 @@ setup(
     author="German Aerospace Center (DLR)",
     author_email="ukis-helpdesk@dlr.de",
     license="Apache 2.0",
-    description="cloud and cloud shadow masking in Sentinel-2, Landsat-8, Landsat-7 and Landsat-5 images",
+    description="masks clouds and cloud shadows in Sentinel-2, Landsat-8, Landsat-7 and Landsat-5 images",
     zip_safe=False,
     packages=find_packages(),
     install_requires=open("requirements.txt").read().splitlines(),
