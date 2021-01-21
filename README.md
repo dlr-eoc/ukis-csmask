@@ -63,7 +63,7 @@ The easiest way to install ukis-csmask is through pip. The default installation 
 pip install ukis-csmask
 ```
 
-To install ukis-csmask with GPU support run the following instead. This requires that you have a CUDA supported GPU and CUDA runtime libraries (CUDA 10.2 and cuDNN 8.0.3) installed on the system
+To install ukis-csmask with GPU support run the following instead. This requires that you have a GPU with CUDA runtime libraries (CUDA 10.2 and cuDNN 8.0.3) installed on the system.
 
 ```shell
 pip install ukis-csmask[gpu]
