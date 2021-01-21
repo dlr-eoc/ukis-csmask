@@ -79,10 +79,8 @@ class CSmask:
         sess = onnxruntime.InferenceSession(str(Path(__file__).parent) + "/model.onnx")
 
         # predict on array tiles
-        x = x if isinstance(x, list) else [x]
-        feed = dict([(inp.name, x[n]) for n, inp in enumerate(sess.get_inputs())])
-        y_prob = sess.run(None, feed)
-        y_prob = np.concatenate(y_prob)
+        y_prob = [sess.run(None, {"input_1": tile[np.newaxis, :]}) for n, tile in enumerate(list(x))]
+        y_prob = np.concatenate(y_prob)[:, 0, :, :, :]
 
         # untile probabilities with smooth blending
         y_prob = untile_array(

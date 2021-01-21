@@ -16,6 +16,19 @@ something was changed
 [master]  (2021-**-**)
 ----------------------
 
+
+[0.1.2-beta]  (2021-01-21)
+---------------------
+
+Fixed
+*******
+- memory error when running inference on GPU
+
+Changed
+*******
+- updated README
+
+
 [0.1.1-beta]  (2021-01-20)
 ---------------------
 
