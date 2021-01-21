@@ -57,10 +57,16 @@ csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKB
 ````
 
 ## Installation
-The easiest way to install ukis-csmask is through pip.
+The easiest way to install ukis-csmask is through pip. The default installation supports CPU computation.
 
 ```shell
 pip install ukis-csmask
+```
+
+To install ukis-csmask with GPU support run the following instead. This requires that you have a CUDA supported GPU and CUDA runtime libraries (CUDA 10.2 and cuDNN 8.0.3) installed on the system
+
+```shell
+pip install ukis-csmask[gpu]
 ```
 
 For a list of dependencies check the [requirements](https://github.com/dlr-eoc/ukis-csmask/blob/main/requirements.txt).
