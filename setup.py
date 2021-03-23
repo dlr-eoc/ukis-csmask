@@ -35,7 +35,14 @@ setup(
     zip_safe=False,
     packages=find_packages(),
     install_requires=open("requirements.txt").read().splitlines(),
-    extras_require={"gpu": ["onnxruntime-gpu",], "dev": ["pytest",],},
+    extras_require={
+        "gpu": [
+            "onnxruntime-gpu",
+        ],
+        "dev": [
+            "pytest",
+        ],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",

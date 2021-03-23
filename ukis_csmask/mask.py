@@ -10,7 +10,10 @@ class CSmask:
     """Segments clouds and cloud shadows in multi-spectral satellite images."""
 
     def __init__(
-        self, img, band_order=None, nodata_value=None,
+        self,
+        img,
+        band_order=None,
+        nodata_value=None,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
