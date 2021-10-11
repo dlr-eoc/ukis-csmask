@@ -6,6 +6,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/ukis-csmask)](https://pypi.python.org/pypi/ukis-csmask/)
 [![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
+[![DOI](https://zenodo.org/badge/328616234.svg)](https://zenodo.org/badge/latestdoi/328616234)
 
 UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red", "NIR", "SWIR1" and "SWIR2" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images are resampled to approximately 30 m spatial resolution.
 
