@@ -1,10 +1,10 @@
-cff-version: 1.1.0
+cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 authors:
   - family-names: Wieland
     given-names: Marc
 title: ukis-csmask
-version: 0.1.2
+version: 0.1.3
 date-released: 2021-01-21
 references:
   - type: article
@@ -23,5 +23,5 @@ references:
     issn: 0034-4257
     doi: 10.1016/j.rse.2019.05.022
     url: https://www.sciencedirect.com/science/article/pii/S0034425719302159
-    keywords: Cloud, Cloud shadow, Convolutional neural network, Landsat, Sentinel-2
+    keywords: [Cloud, Cloud shadow, Convolutional neural network, Landsat, Sentinel-2]
     abstract: Cloud and cloud shadow segmentation is a crucial pre-processing step for any application that uses multi-spectral satellite images. In particular, disaster related applications (e.g., flood monitoring or rapid damage mapping), which are highly time- and data-critical, require methods that produce accurate cloud and cloud shadow masks in short time while being able to adapt to large variations in the target domain (induced by atmospheric conditions, different sensors, scene properties, etc.). In this study, we propose a data-driven approach to semantic segmentation of cloud and cloud shadow in single date images based on a modified U-Net convolutional neural network that aims to fulfil these requirements. We train the network on a global database of Landsat OLI images for the segmentation of five classes (“shadow”, “cloud”, “water”, “land” and “snow/ice”). We compare the results to state-of-the-art methods, proof the model's generalization ability across multiple satellite sensors (Landsat TM, Landsat ETM+, Landsat OLI and Sentinel-2) and show the influence of different training strategies and spectral band combinations on the performance of the segmentation. Our method consistently outperforms Fmask and a traditional Random Forest classifier on a globally distributed multi-sensor test dataset in terms of accuracy, Cohen's Kappa coefficient, Dice coefficient and inference speed. The results indicate that a reduced feature space composed solely of red, green, blue and near-infrared bands already produces good results for all tested sensors. If available, adding shortwave-infrared bands can increase the accuracy. Contrast and brightness augmentations of the training data further improve the segmentation performance. The best performing U-Net model achieves an accuracy of 0.89, Kappa of 0.82 and Dice coefficient of 0.85, while running the inference over 896 test image tiles with 44.8 s/megapixel (2.8 s/megapixel on GPU). The Random Forest classifier reaches an accuracy of 0.79, Kappa of 0.65 and Dice coefficient of 0.74 with 3.9 s/megapixel inference time (on CPU) on the same training and testing data. The rule-based Fmask method takes significantly longer (277.8 s/megapixel) and produces results with an accuracy of 0.75, Kappa of 0.60 and Dice coefficient of 0.72.

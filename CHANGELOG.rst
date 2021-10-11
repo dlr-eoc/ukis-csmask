@@ -1,21 +1,15 @@
 Changelog
 =========
 
+[0.1.3]  (2021-10-11)
+----------------------
 Added
 *****
-something was added
-
-Fixed
-*****
-something was fixed
+- added DOI
 
 Changed
 *******
-something was changed
-
-[master]  (2021-**-**)
-----------------------
-
+- removed `beta`
 
 [0.1.2-beta]  (2021-01-21)
 ---------------------
