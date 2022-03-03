@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.1.4]  (2022-03-03)
+----------------------
+Changed
+*******
+- removed `pytest` from normal requirements
+
 [0.1.3]  (2021-10-11)
 ----------------------
 Added

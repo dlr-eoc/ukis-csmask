@@ -1,4 +1,3 @@
 numpy
 onnxruntime
-pytest
 scipy

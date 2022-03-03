@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import numpy as np
 import onnxruntime
-from pathlib import Path
 from scipy import ndimage
 
 from .utils import reclassify, tile_array, untile_array
