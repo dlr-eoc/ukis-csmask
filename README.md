@@ -8,11 +8,18 @@
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
 [![DOI](https://zenodo.org/badge/328616234.svg)](https://zenodo.org/badge/latestdoi/328616234)
 
-UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red", "NIR", "SWIR1" and "SWIR2" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images are resampled to approximately 30 m spatial resolution.
+UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red", "NIR", "SWIR1" and "SWIR2" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images are resampled to approximately 30 m spatial resolution.
 
-This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset. If you use ukis-csmask in your work, please consider citing us as follows.
+This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset.
+
 > Wieland, M.; Li, Y.; Martinis, S. Multi-sensor cloud and cloud shadow segmentation with a convolutional
 neural network. *Remote Sensing of Environment*, 2019, 230, 1-12. [https://doi.org/10.1016/j.rse.2019.05.022](https://doi.org/10.1016/j.rse.2019.05.022)
+
+This [publication](https://doi.org/10.5194/isprs-archives-XLIII-B3-2022-217-2022) introduces the Python package, performs additional evaluation on recent cloud and cloud shadow benchmark datasets and tests the applicability of ukis-csmask on Landsat-9 imagery.
+
+> Wieland, M.; Fichtner, F.; Martinis, S. UKIS-CSMASK: A Python package for multi-sensor cloud and cloud shadow segmentation. *Int. Arch. Photogramm. Remote Sens. Spatial Inf. Sci.*, 2022, XLIII-B3-2022, 217–222. [https://doi.org/10.5194/isprs-archives-XLIII-B3-2022-217-2022](https://doi.org/10.5194/isprs-archives-XLIII-B3-2022-217-2022)
+
+If you use ukis-csmask in your work, please consider citing one of the above publications.
 
 ![Examples](img/examples.png)
 
