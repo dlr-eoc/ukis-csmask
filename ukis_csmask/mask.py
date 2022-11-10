@@ -15,7 +15,7 @@ class CSmask:
         img,
         band_order=None,
         nodata_value=None,
-        invalid_buffer=0,
+        invalid_buffer=4,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
