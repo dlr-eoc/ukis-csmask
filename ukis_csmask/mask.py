@@ -25,7 +25,7 @@ class CSmask:
         :param band_order: Image band order. (dict).
             >>> band_order = {0: "Blue", 1: "Green", 2: "Red", 3: "NIR", 4: "SWIR1", 5: "SWIR2"}
         :param nodata_value: Additional nodata value that will be added to valid mask. (num).
-        :param valid_buffer: Number of pixel that should be buffered around invalid areas.
+        :param invalid_buffer: Number of pixel that should be buffered around invalid areas.
         """
         # consistency checks on input image
         if band_order is None:
