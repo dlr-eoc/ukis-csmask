@@ -15,6 +15,7 @@ class CSmask:
         img,
         band_order=None,
         nodata_value=None,
+        invalid_buffer=4,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
@@ -24,6 +25,7 @@ class CSmask:
         :param band_order: Image band order. (dict).
             >>> band_order = {0: "Blue", 1: "Green", 2: "Red", 3: "NIR", 4: "SWIR1", 5: "SWIR2"}
         :param nodata_value: Additional nodata value that will be added to valid mask. (num).
+        :param invalid_buffer: Number of pixel that should be buffered around invalid areas.
         """
         # consistency checks on input image
         if band_order is None:
@@ -65,7 +67,7 @@ class CSmask:
         self.band_order = band_order
         self.nodata_value = nodata_value
         self.csm = self._csm()
-        self.valid = self._valid()
+        self.valid = self._valid(invalid_buffer)
 
     def _csm(self):
         """Computes cloud and cloud shadow mask with following class ids: 0=background, 1=clouds, 2=cloud shadows.
@@ -100,7 +102,7 @@ class CSmask:
 
         return csm
 
-    def _valid(self):
+    def _valid(self, invalid_buffer):
         """Converts the cloud and cloud shadow mask into a binary valid mask with following class ids:
         0=invalid (clouds, cloud shadows, nodata), 1=valid (rest). Invalid pixels are buffered to reduce effect of
         cloud and cloud shadow fuzzy boundaries. If CSmask was initialized with nodata_value it will be added to the
@@ -115,7 +117,7 @@ class CSmask:
         # dilate the inverse of the binary valid pixel mask (invalid=0)
         # this effectively buffers the invalid pixels
         valid_i = ~valid.astype(np.bool)
-        valid = (~ndimage.binary_dilation(valid_i, iterations=4).astype(np.bool)).astype(np.uint8)
+        valid = (~ndimage.binary_dilation(valid_i, iterations=invalid_buffer).astype(np.bool)).astype(np.uint8)
 
         if self.nodata_value is not None:
             # add image nodata pixels to valid pixel mask
