@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.1.5] (2022-11-11)
+--------------------
+Changed
+*******
+- enables setting the buffer size of invalid areas via `invalid_buffer` parameter
+
 [0.1.4]  (2022-03-03)
 ----------------------
 Changed
