@@ -82,7 +82,9 @@ class CSmask:
         x /= [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
 
         # start onnx inference session and load model
-        sess = onnxruntime.InferenceSession(str(Path(__file__).parent) + "/model.onnx")
+        sess = onnxruntime.InferenceSession(
+            str(Path(__file__).parent) + "/model.onnx", providers=onnxruntime.get_available_providers()
+        )
 
         # predict on array tiles
         y_prob = [sess.run(None, {"input_1": tile[np.newaxis, :]}) for n, tile in enumerate(list(x))]
@@ -116,8 +118,8 @@ class CSmask:
 
         # dilate the inverse of the binary valid pixel mask (invalid=0)
         # this effectively buffers the invalid pixels
-        valid_i = ~valid.astype(np.bool)
-        valid = (~ndimage.binary_dilation(valid_i, iterations=invalid_buffer).astype(np.bool)).astype(np.uint8)
+        valid_i = ~valid.astype(bool)
+        valid = (~ndimage.binary_dilation(valid_i, iterations=invalid_buffer).astype(bool)).astype(np.uint8)
 
         if self.nodata_value is not None:
             # add image nodata pixels to valid pixel mask

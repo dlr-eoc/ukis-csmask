@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.1.6] (2022-11-30)
+--------------------
+Changed
+*******
+- update onnxruntime version and add providers to session
+
 [0.1.5] (2022-11-11)
 --------------------
 Changed

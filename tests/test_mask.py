@@ -70,8 +70,8 @@ def test_csmask_valid(data):
     csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"])
     y_pred = csmask.valid
     y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [0, 1, 1, 1, 0]})
-    y_true_inverted = ~y_true.astype(np.bool)
-    y_true = (~ndimage.binary_dilation(y_true_inverted, iterations=4).astype(np.bool)).astype(np.uint8)
+    y_true_inverted = ~y_true.astype(bool)
+    y_true = (~ndimage.binary_dilation(y_true_inverted, iterations=4).astype(bool)).astype(np.uint8)
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
