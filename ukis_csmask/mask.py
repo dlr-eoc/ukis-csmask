@@ -82,7 +82,9 @@ class CSmask:
         x /= [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
 
         # start onnx inference session and load model
-        sess = onnxruntime.InferenceSession(str(Path(__file__).parent) + "/model.onnx")
+        sess = onnxruntime.InferenceSession(
+            str(Path(__file__).parent) + "/model.onnx", providers=onnxruntime.get_available_providers()
+        )
 
         # predict on array tiles
         y_prob = [sess.run(None, {"input_1": tile[np.newaxis, :]}) for n, tile in enumerate(list(x))]
