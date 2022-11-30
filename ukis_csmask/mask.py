@@ -118,8 +118,8 @@ class CSmask:
 
         # dilate the inverse of the binary valid pixel mask (invalid=0)
         # this effectively buffers the invalid pixels
-        valid_i = ~valid.astype(np.bool)
-        valid = (~ndimage.binary_dilation(valid_i, iterations=invalid_buffer).astype(np.bool)).astype(np.uint8)
+        valid_i = ~valid.astype(bool)
+        valid = (~ndimage.binary_dilation(valid_i, iterations=invalid_buffer).astype(bool)).astype(np.uint8)
 
         if self.nodata_value is not None:
             # add image nodata pixels to valid pixel mask
