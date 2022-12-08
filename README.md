@@ -65,19 +65,25 @@ csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKB
 ````
 
 ## Installation
-The easiest way to install ukis-csmask is through pip. The default installation supports CPU computation.
+The easiest way to install ukis-csmask is through pip. To install ukis-csmask with [default CPU provider](https://onnxruntime.ai/docs/execution-providers/) run the following.
 
 ```shell
-pip install ukis-csmask
+pip install ukis-csmask[cpu]
 ```
 
-To install ukis-csmask with GPU support run the following instead. This requires that you have a GPU with CUDA runtime libraries installed on the system.
+To install ukis-csmask with [OpenVino support](https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html) for enhanced CPU inference run the following instead.
+
+```shell
+pip install ukis-csmask[openvino]
+```
+
+To install ukis-csmask with [GPU support](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html) run the following instead. This requires that you have a GPU with CUDA runtime libraries installed on the system.
 
 ```shell
 pip install ukis-csmask[gpu]
 ```
 
-For a list of dependencies check the [requirements](https://github.com/dlr-eoc/ukis-csmask/blob/main/requirements.txt).
+ukis-csmask depends on [onnxruntime](https://onnxruntime.ai/). For a list of additional dependencies check the [requirements](https://github.com/dlr-eoc/ukis-csmask/blob/main/requirements.txt).
 
 ## Contributors
 The UKIS team creates and adapts libraries which simplify the usage of satellite data. Our team includes (in alphabetical order):
