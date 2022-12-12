@@ -1,10 +1,19 @@
-from pathlib import Path
-
 import numpy as np
-import onnxruntime
+
+from pathlib import Path
 from scipy import ndimage
 
 from .utils import reclassify, tile_array, untile_array
+
+try:
+    import onnxruntime
+except ImportError as e:
+    msg = (
+        "ukis-csmask dependencies are not installed.\n\n"
+        "Please pip install as follows and specify your desired runtime provider [cpu], [openvino] or [gpu]:\n\n"
+        "  python -m pip install ukis-csmask[cpu] --upgrade"
+    )
+    raise ImportError(str(e) + "\n\n" + msg)
 
 
 class CSmask:
