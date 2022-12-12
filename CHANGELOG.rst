@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.1.7] (2022-12-09)
+--------------------
+Added
+*******
+- added support for onnxruntime-openvino provider
+
 [0.1.6] (2022-11-30)
 --------------------
 Changed

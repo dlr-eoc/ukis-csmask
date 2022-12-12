@@ -36,8 +36,14 @@ setup(
     packages=find_packages(),
     install_requires=open("requirements.txt").read().splitlines(),
     extras_require={
+        "cpu": [
+            "onnxruntime",
+        ],
         "gpu": [
             "onnxruntime-gpu",
+        ],
+        "openvino": [
+            "onnxruntime-openvino",
         ],
         "dev": [
             "pytest",
