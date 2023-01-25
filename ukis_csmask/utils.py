@@ -147,8 +147,11 @@ def tile_array(array, xsize=256, ysize=256, overlap=0.1):
     :returns: Numpy array of shape(tiles, rows, cols, bands). (ndarray).
     """
     if xsize != 256 or ysize != 256:
-        warnings.warn(message=f"The model has been trained and is optimized for 256x256 image tiles, you are using "
-                              f"{xsize}x{ysize}.", category=UserWarning)
+        warnings.warn(
+            message=f"The model has been trained and is optimized for 256x256 image tiles, you are using "
+            f"{xsize}x{ysize}.",
+            category=UserWarning,
+        )
 
     # get dtype and bands from first file
     dtype = array.dtype
