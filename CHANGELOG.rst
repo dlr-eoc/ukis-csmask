@@ -1,6 +1,13 @@
 Changelog
 =========
 
+
+[0.1.8] (2023-**-**)
+--------------------
+Added
+*******
+- warn user when any other tiling than 256x256 is used
+
 [0.1.7] (2022-12-09)
 --------------------
 Added
