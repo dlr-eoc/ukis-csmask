@@ -14,9 +14,9 @@ from ukis_csmask.utils import reclassify, cohen_kappa_score
 @pytest.mark.parametrize(
     "img, band_order, nodata_value",
     [
-        (np.empty((20, 20, 6), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
-        (np.empty((20, 20, 8), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2", "NIR2", "ETC"], None),
-        (np.empty((20, 20, 6), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"], -666),
+        (np.empty((256, 256, 6), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((256, 256, 8), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2", "NIR2", "ETC"], None),
+        (np.empty((256, 256, 6), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"], -666),
     ],
 )
 def test_csmask_init(img, band_order, nodata_value):
@@ -27,10 +27,10 @@ def test_csmask_init(img, band_order, nodata_value):
     "img, band_order, nodata_value",
     [
         (3, ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
-        (np.empty((20, 20), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
-        (np.empty((20, 20, 3), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
-        (np.empty((20, 20, 6), np.uint8), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
-        (np.empty((20, 20, 6), np.float32), ["Blue", "Green", "Yellow", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((256, 256), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((256, 256, 3), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((256, 256, 6), np.uint8), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((256, 256, 6), np.float32), ["Blue", "Green", "Yellow", "NIR", "SWIR1", "SWIR2"], None),
     ],
 )
 def test_csmask_init_raises(img, band_order, nodata_value):
@@ -38,6 +38,19 @@ def test_csmask_init_raises(img, band_order, nodata_value):
         CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
 
 
+@pytest.mark.parametrize(
+    "img, band_order, nodata_value",
+    [
+        (np.empty((128, 128, 6), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
+        (np.empty((512, 512, 6), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"], -666),
+    ],
+)
+def test_csmask_init_warns(img, band_order, nodata_value):
+    with pytest.warns(UserWarning):
+        CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
+
+
+@pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
     "data",
     [
@@ -57,6 +70,7 @@ def test_csmask_csm(data):
     assert kappa >= 0.75
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
     "data",
     [

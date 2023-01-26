@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from pathlib import Path
@@ -51,6 +53,13 @@ class CSmask:
 
         if img.dtype != np.float32:
             raise TypeError("img must be in top of atmosphere reflectance with dtype float32")
+
+        if img.shape[0] != 256 or img.shape[1] != 256:
+            warnings.warn(
+                message=f"The model has been trained and is optimized for 256x256 image tiles, you are using "
+                        f"{img.shape[0]}x{img.shape[1]}.",
+                category=UserWarning,
+            )
 
         # consistency checks on band_order
         target_band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]

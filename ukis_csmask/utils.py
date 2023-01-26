@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 from scipy.signal.windows import tukey
 
@@ -146,13 +144,6 @@ def tile_array(array, xsize=256, ysize=256, overlap=0.1):
     :param overlap: Overlap of tiles between 0.0 and 1.0. (float).
     :returns: Numpy array of shape(tiles, rows, cols, bands). (ndarray).
     """
-    if xsize != 256 or ysize != 256:
-        warnings.warn(
-            message=f"The model has been trained and is optimized for 256x256 image tiles, you are using "
-            f"{xsize}x{ysize}.",
-            category=UserWarning,
-        )
-
     # get dtype and bands from first file
     dtype = array.dtype
     bands = array.shape[2] if array.ndim == 3 else 1
