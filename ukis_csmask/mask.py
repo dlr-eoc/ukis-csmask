@@ -57,7 +57,7 @@ class CSmask:
         if img.shape[0] != 256 or img.shape[1] != 256:
             warnings.warn(
                 message=f"The model has been trained and is optimized for 256x256 image tiles, you are using "
-                        f"{img.shape[0]}x{img.shape[1]}.",
+                f"{img.shape[0]}x{img.shape[1]}.",
                 category=UserWarning,
             )
 
