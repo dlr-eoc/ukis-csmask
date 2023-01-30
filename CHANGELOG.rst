@@ -6,7 +6,7 @@ Changelog
 --------------------
 Added
 *******
-- warn user when any other tiling than 256x256 is used
+- warn user when smaller tiling than 256x256 is used
 
 [0.1.7] (2022-12-09)
 --------------------
