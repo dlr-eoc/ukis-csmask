@@ -42,7 +42,7 @@ def test_csmask_init_raises(img, band_order, nodata_value):
     "img, band_order, nodata_value",
     [
         (np.empty((128, 128, 6), np.float32), ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"], None),
-        (np.empty((512, 512, 6), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"], -666),
+        (np.empty((64, 64, 6), np.float32), ["Green", "Red", "Blue", "NIR", "SWIR1", "SWIR2"], -666),
     ],
 )
 def test_csmask_init_warns(img, band_order, nodata_value):

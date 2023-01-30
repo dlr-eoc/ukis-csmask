@@ -54,10 +54,10 @@ class CSmask:
         if img.dtype != np.float32:
             raise TypeError("img must be in top of atmosphere reflectance with dtype float32")
 
-        if img.shape[0] != 256 or img.shape[1] != 256:
+        if img.shape[0] < 256 or img.shape[1] < 256:
             warnings.warn(
-                message=f"The model has been trained and is optimized for 256x256 image tiles, you are using "
-                f"{img.shape[0]}x{img.shape[1]}.",
+                message=f"Your input image is smaller than the internal tiling size of 256x256 pixels. This may result "
+                f"in suboptimal performance. Consider using a larger image size.",
                 category=UserWarning,
             )
 
