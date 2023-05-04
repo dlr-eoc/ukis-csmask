@@ -56,7 +56,7 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Topic :: Scientific/Engineering :: GIS",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     long_description=long_description,
     long_description_content_type="text/markdown",
     include_package_data=True,
