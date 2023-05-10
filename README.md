@@ -8,7 +8,7 @@
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
 [![DOI](https://zenodo.org/badge/328616234.svg)](https://zenodo.org/badge/latestdoi/328616234)
 
-UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red", "NIR", "SWIR1" and "SWIR2" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images are resampled to approximately 30 m spatial resolution.
+UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red" and "NIR" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images also include "SWIR1" and "SWIR2" spectral bands and are resampled to approximately 30 m spatial resolution.
 
 This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset.
 
@@ -41,8 +41,8 @@ img.warp(
 )
 
 # compute cloud and cloud shadow mask
-# NOTE: band_order must match the order of bands in the input image. it does not have to be in this explicit order,
-# but needs to include these six spectral bands.
+# NOTE: band_order must match the order of bands in the input image. it does not have to be in this explicit order.
+# make sure to use these six spectral bands to get best performance
 csmask = CSmask(
     img=img.arr,
     band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"],
