@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from pathlib import Path
@@ -51,6 +53,13 @@ class CSmask:
 
         if img.dtype != np.float32:
             raise TypeError("img must be in top of atmosphere reflectance with dtype float32")
+
+        if img.shape[0] < 256 or img.shape[1] < 256:
+            warnings.warn(
+                message=f"Your input image is smaller than the internal tiling size of 256x256 pixels. This may result "
+                f"in suboptimal performance. Consider using a larger image size.",
+                category=UserWarning,
+            )
 
         # consistency checks on band_order
         target_band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]

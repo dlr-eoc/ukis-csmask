@@ -6,13 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - name: black lint
-        run: |
-          python -m pip install black
-          black . --check --line-length 120
-
-#      - uses: psf/black@stable
-#        with:
-#          args: ". --check --line-length 120"
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable
+        with:
+          options: "--check --line-length 120"
+          src: "."

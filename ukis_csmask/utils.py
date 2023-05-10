@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.signal
+from scipy.signal.windows import tukey
 
 
 def reclassify(array, class_dict):
@@ -27,9 +27,9 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
 
     :param array: Array to which the rolling window is applied (array_like).
     :param window: Either a single integer to create a window of only the last axis or a
-        tuple to create it for the last len(window) axes. 0 can be used as a to ignore a
-        dimension in the window (int or tuple).
-    :param asteps: Aligned at the last axis, new steps for the original array, ie. for
+        tuple to create it for the last len(window) axes. 0 can be used as a placeholder
+        to ignore a dimension in the window (int or tuple).
+    :param asteps: Aligned at the last axis, new steps for the original array, i.e. for
         creation of non-overlapping windows (tuple).
     :param wsteps: Steps for the added window dimensions. These can be 0 to repeat values
         along the axis (int or tuple (same size as window)).
@@ -41,7 +41,7 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
         end makes it easier to get the neighborhood, however toend=False will give
         a more intuitive result if you view the whole array (bool).
     :returns: A view on `array` which is smaller to fit the windows and has windows added
-        dimensions (0s not counting), ie. every point of `array` is an array of size
+        dimensions (0s not counting), i.e. every point of `array` is an array of size
         window. (ndarray).
     """
     array = np.asarray(array)
@@ -89,7 +89,7 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
         _wsteps[window == 0] = 1
     wsteps = _wsteps
 
-    # Check that the window would not be larger then the original:
+    # Check that the window would not be larger than the original:
     if np.any(orig_shape[-len(window) :] < window * wsteps):
         raise ValueError("`window` * `wsteps` larger then `array` in at least one dimension.")
 
@@ -101,7 +101,7 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
 
     new_shape[-len(window) :] += wsteps - _window * wsteps
     new_shape = (new_shape + asteps - 1) // asteps
-    # make sure the new_shape is at least 1 in any "old" dimension (ie. steps
+    # make sure the new_shape is at least 1 in any "old" dimension (i.e. steps
     # is (too) large, but we do not care.
     new_shape[new_shape < 1] = 1
     shape = new_shape
@@ -227,7 +227,7 @@ def untile_array(array_tiled, target_shape, overlap=0.1, smooth_blending=False):
             raise ValueError("overlap needs to be <=0.5 when using smooth blending.")
 
         # define tapered cosine function (tukey) to be used for smooth blending
-        window1d = scipy.signal.tukey(M=xsize, alpha=overlap * 2)
+        window1d = tukey(M=xsize, alpha=overlap * 2)
         window2d = np.expand_dims(np.expand_dims(window1d, axis=1), axis=2)
         window2d = window2d * window2d.transpose(1, 0, 2)
 
