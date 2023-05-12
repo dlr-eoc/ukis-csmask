@@ -24,32 +24,30 @@ class CSmask:
     def __init__(
         self,
         img,
-        band_order=None,
+        band_order,
         nodata_value=None,
         invalid_buffer=4,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
-            Requires images of Sentinel-2, Landsat-8, -7 or -5 in Top of Atmosphere reflectance [0, 1].
-            Requires image bands to include at least "Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2".
-            Requires image bands to be in approximately 30 m resolution.
-        :param band_order: Image band order. (dict).
-            >>> band_order = {0: "Blue", 1: "Green", 2: "Red", 3: "NIR", 4: "SWIR1", 5: "SWIR2"}
+            Requires satellite images in Top of Atmosphere reflectance [0, 1].
+            Requires image bands to include at least "Blue", "Green", "Red", "NIR" (uses 4 band model).
+            For better performance requires image bands to include "Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2" (runs 6 band model).
+            For better performance requires image bands to be in approximately 30 m resolution.
+        :param band_order: Image band order. (list of string).
+            >>> band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
         :param nodata_value: Additional nodata value that will be added to valid mask. (num).
-        :param invalid_buffer: Number of pixel that should be buffered around invalid areas.
+        :param invalid_buffer: Number of pixels that should be buffered around invalid areas.
         """
         # consistency checks on input image
-        if band_order is None:
-            band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
-
         if isinstance(img, np.ndarray) is False:
             raise TypeError("img must be of type np.ndarray")
 
         if img.ndim != 3:
             raise TypeError("img must be of shape (rows, cols, bands)")
 
-        if img.shape[2] < 6:
-            raise TypeError("img must contain at least 6 spectral bands")
+        if img.shape[2] < 4:
+            raise TypeError("img must contain at least 4 spectral bands")
 
         if img.dtype != np.float32:
             raise TypeError("img must be in top of atmosphere reflectance with dtype float32")
@@ -62,28 +60,37 @@ class CSmask:
             )
 
         # consistency checks on band_order
-        target_band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
-        if band_order != target_band_order:
-            if all(elem in band_order for elem in target_band_order):
-                # rearrange image bands to match target_band_order
-                idx = np.array(
-                    [
-                        np.where(band == np.array(band_order, dtype="S"))[0][0]
-                        for band in np.array(target_band_order, dtype="S")
-                    ]
-                )
-                img = np.stack(np.asarray([img[:, :, i] for i in range(img.shape[2])])[idx], axis=2)
-            else:
-                raise TypeError(
-                    "img must contain at least ['Blue', 'Green', 'Red', 'NIR', 'SWIR1', 'SWIR2'] spectral bands"
-                )
+        if band_order is None:
+            raise TypeError("band_order cannot be None")
+
+        if all(elem in band_order for elem in ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]):
+            target_band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+            band_mean = [0.19312, 0.18659, 0.18899, 0.30362, 0.23085, 0.16216]
+            band_std = [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
+            model_file = str(Path(__file__).parent) + "/model_6b.onnx"
+        elif all(elem in band_order for elem in ["Blue", "Green", "Red", "NIR"]):
+            target_band_order = ["Blue", "Green", "Red", "NIR"]
+            band_mean = [0.19312, 0.18659, 0.18899, 0.30362]
+            band_std = [0.16431, 0.16762, 0.18230, 0.17409]
+            model_file = str(Path(__file__).parent) + "/model_4b.onnx"
         else:
-            # use image bands as are
-            img = np.stack(np.asarray([img[:, :, i] for i in range(img.shape[2])]), axis=2)
+            raise TypeError(
+                f"band_order must contain at least 'Blue', 'Green', 'Red', 'NIR' "
+                f"and for better performance also 'SWIR1' and 'SWIR2'"
+            )
+
+        # rearrange image bands to match target_band_order
+        idx = np.array(
+            [np.where(band == np.array(band_order, dtype="S"))[0][0] for band in np.array(target_band_order, dtype="S")]
+        )
+        img = img[:, :, idx]
 
         self.img = img
         self.band_order = band_order
+        self.band_mean = band_mean
+        self.band_std = band_std
         self.nodata_value = nodata_value
+        self.model_file = model_file
         self.csm = self._csm()
         self.valid = self._valid(invalid_buffer)
 
@@ -96,13 +103,11 @@ class CSmask:
         x = tile_array(self.img, xsize=256, ysize=256, overlap=0.2)
 
         # standardize feature space
-        x -= [0.19312, 0.18659, 0.18899, 0.30362, 0.23085, 0.16216]
-        x /= [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
+        x -= self.band_mean
+        x /= self.band_std
 
         # start onnx inference session and load model
-        sess = onnxruntime.InferenceSession(
-            str(Path(__file__).parent) + "/model.onnx", providers=onnxruntime.get_available_providers()
-        )
+        sess = onnxruntime.InferenceSession(self.model_file, providers=onnxruntime.get_available_providers())
 
         # predict on array tiles
         y_prob = [sess.run(None, {"input_1": tile[np.newaxis, :]}) for n, tile in enumerate(list(x))]
