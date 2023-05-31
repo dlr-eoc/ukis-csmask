@@ -23,7 +23,7 @@ If you use ukis-csmask in your work, please consider citing one of the above pub
 
 ![Examples](img/examples.png)
 
-## Example
+## Example (Sentinel 2)
 Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [ukis-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with [numpy](https://numpy.org/) arrays.
 
 ````python
@@ -62,6 +62,48 @@ csmask_valid = Image(csmask.valid, transform=img.dataset.transform, crs=img.data
 # write results back to file
 csmask_csm.write_to_file("sentinel2_csm.tif", dtype="uint8", compress="PACKBITS")
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKBITS", kwargs={"nbits":2})
+````
+## Example (Landsat 8)
+Here's a similar example based on Landsat 8.
+
+````python
+import rasterio
+import numpy as np
+from ukis_csmask.mask import CSmask
+from ukis_pysat.raster import Image, Platform
+
+# set Landsat 8 source path and prefix (example)
+data_path = "/your_data_path/"
+L8_file_prefix = "LC08_L1TP_191015_20210428_20210507_02_T1"
+
+data_path = data_path+L8_file_prefix+"/"
+mtl_file  = data_path+L8_file_prefix+"_MTL.txt"
+
+# stack [B2:'Blue', B3:'Green', B4:'Red', B5:'NIR', B6:'SWIR1', B7:'SWIR2'] as numpy array
+L8_band_files  = [data_path+L8_file_prefix+'_B'+ x + '.TIF' for x in [str(x+2) for x in range(6)]]
+
+# >> adopted from https://gis.stackexchange.com/questions/223910/using-rasterio-or-gdal-to-stack-multiple-bands-without-using-subprocess-commands
+# read metadata of first file
+with rasterio.open(L8_band_files[0]) as src0:
+    meta = src0.meta
+# update meta to reflect the number of layers
+meta.update(count = len(L8_band_files))
+# read each layer and append it to numpy array
+L8_bands = []
+for id, layer in enumerate(L8_band_files, start=1):
+    with rasterio.open(layer) as src1:
+        L8_bands.append(src1.read(1))
+L8_bands = np.stack(L8_bands,axis=2)
+# <<
+
+img = Image(data=L8_bands, crs = meta['crs'], transform = meta['transform'], dimorder="last")
+
+img.dn2toa(
+        platform=Platform.Landsat8,
+        mtl_file=mtl_file,
+        wavelengths = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+)
+# >> proceed by analogy with Sentinel 2 example
 ````
 
 ## Installation
