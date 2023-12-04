@@ -63,6 +63,7 @@ csmask_valid = Image(csmask.valid, transform=img.dataset.transform, crs=img.data
 csmask_csm.write_to_file("sentinel2_csm.tif", dtype="uint8", compress="PACKBITS")
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKBITS", kwargs={"nbits":2})
 ````
+
 ## Example (Landsat 8)
 Here's a similar example based on Landsat 8.
 
