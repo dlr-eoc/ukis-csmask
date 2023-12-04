@@ -13,7 +13,6 @@ Changed
 - band naming scheme to match STAC standard
 
 [0.1.9] (2023-05-12)
-
 --------------------
 Added
 *******
