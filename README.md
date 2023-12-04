@@ -102,7 +102,7 @@ img = Image(data=L8_bands, crs = meta['crs'], transform = meta['transform'], dim
 img.dn2toa(
         platform=Platform.Landsat8,
         mtl_file=mtl_file,
-        wavelengths = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+        wavelengths = ["blue", "green", "red", "nir", "swir16", "swir22"]
 )
 # >> proceed by analogy with Sentinel 2 example
 ````
