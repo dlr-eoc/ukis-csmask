@@ -1,7 +1,7 @@
 Changelog
 =========
 
-[0.2.0] (2023-12-04)
+[0.2.1] (2023-12-05)
 --------------------
 Added
 *******
@@ -10,6 +10,16 @@ Added
 Changed
 *******
 - band naming scheme to match STAC standard
+
+Fixed
+*******
+- version mismatch with pip release
+
+[0.2.0] (2023-05-24)
+--------------------
+Added
+*******
+- 4 band model to manifest
 
 [0.1.9] (2023-05-12)
 --------------------
