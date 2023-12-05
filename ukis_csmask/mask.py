@@ -27,6 +27,8 @@ class CSmask:
         band_order,
         nodata_value=None,
         invalid_buffer=4,
+        intra_op_num_threads=0,
+        inter_op_num_threads=0,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
@@ -35,9 +37,11 @@ class CSmask:
             For better performance requires image bands to include "Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2" (runs 6 band model).
             For better performance requires image bands to be in approximately 30 m resolution.
         :param band_order: Image band order. (list of string).
-            >>> band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+            >>> band_order = ["blue", "green", "red", "nir", "swir16", "swir22"]
         :param nodata_value: Additional nodata value that will be added to valid mask. (num).
-        :param invalid_buffer: Number of pixels that should be buffered around invalid areas.
+        :param invalid_buffer: Number of pixels that should be buffered around invalid areas. (int).
+        :param intra_op_num_threads: Sets the number of threads used to parallelize the execution within nodes. Default is 0 to let onnxruntime choose. (int).
+        :param inter_op_num_threads: Sets the number of threads used to parallelize the execution of the graph (across nodes). Default is 0 to let onnxruntime choose. (int).
         """
         # consistency checks on input image
         if isinstance(img, np.ndarray) is False:
@@ -63,20 +67,25 @@ class CSmask:
         if band_order is None:
             raise TypeError("band_order cannot be None")
 
-        if all(elem in band_order for elem in ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]):
-            target_band_order = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+        # ensure backwards compatibility with old band naming scheme
+        band_order = [b.lower() for b in band_order]
+        band_order = [b.replace("swir1", "swir16") for b in band_order]
+        band_order = [b.replace("swir2", "swir22") for b in band_order]
+
+        if all(elem in band_order for elem in ["blue", "green", "red", "nir", "swir16", "swir22"]):
+            target_band_order = ["blue", "green", "red", "nir", "swir16", "swir22"]
             band_mean = [0.19312, 0.18659, 0.18899, 0.30362, 0.23085, 0.16216]
             band_std = [0.16431, 0.16762, 0.18230, 0.17409, 0.16020, 0.14164]
             model_file = str(Path(__file__).parent) + "/model_6b.onnx"
-        elif all(elem in band_order for elem in ["Blue", "Green", "Red", "NIR"]):
-            target_band_order = ["Blue", "Green", "Red", "NIR"]
+        elif all(elem in band_order for elem in ["blue", "green", "red", "nir"]):
+            target_band_order = ["blue", "green", "red", "nir"]
             band_mean = [0.19312, 0.18659, 0.18899, 0.30362]
             band_std = [0.16431, 0.16762, 0.18230, 0.17409]
             model_file = str(Path(__file__).parent) + "/model_4b.onnx"
         else:
             raise TypeError(
-                f"band_order must contain at least 'Blue', 'Green', 'Red', 'NIR' "
-                f"and for better performance also 'SWIR1' and 'SWIR2'"
+                f"band_order must contain at least 'blue', 'green', 'red', 'nir' "
+                f"and for better performance also 'swir16' and 'swir22'"
             )
 
         # rearrange image bands to match target_band_order
@@ -84,6 +93,14 @@ class CSmask:
             [np.where(band == np.array(band_order, dtype="S"))[0][0] for band in np.array(target_band_order, dtype="S")]
         )
         img = img[:, :, idx]
+
+        # start onnx inference session and load model
+        so = onnxruntime.SessionOptions()
+        so.intra_op_num_threads = intra_op_num_threads
+        so.inter_op_num_threads = inter_op_num_threads
+        self.sess = onnxruntime.InferenceSession(
+            model_file, sess_options=so, providers=onnxruntime.get_available_providers()
+        )
 
         self.img = img
         self.band_order = band_order
@@ -106,11 +123,8 @@ class CSmask:
         x -= self.band_mean
         x /= self.band_std
 
-        # start onnx inference session and load model
-        sess = onnxruntime.InferenceSession(self.model_file, providers=onnxruntime.get_available_providers())
-
         # predict on array tiles
-        y_prob = [sess.run(None, {"input_1": tile[np.newaxis, :]}) for n, tile in enumerate(list(x))]
+        y_prob = [self.sess.run(None, {"input_1": tile[np.newaxis, :]}) for n, tile in enumerate(list(x))]
         y_prob = np.concatenate(y_prob)[:, 0, :, :, :]
 
         # untile probabilities with smooth blending

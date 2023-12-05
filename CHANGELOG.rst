@@ -1,11 +1,15 @@
 Changelog
 =========
 
-[0.2.0] (2023-05-24)
+[0.2.0] (2023-12-04)
 --------------------
-Fixed
+Added
 *******
-- new models in manifest
+- support onnxruntime session options
+
+Changed
+*******
+- band naming scheme to match STAC standard
 
 [0.1.9] (2023-05-12)
 --------------------

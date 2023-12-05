@@ -8,7 +8,7 @@
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
 [![DOI](https://zenodo.org/badge/328616234.svg)](https://zenodo.org/badge/latestdoi/328616234)
 
-UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "Blue", "Green", "Red" and "NIR" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images also include "SWIR1" and "SWIR2" spectral bands and are resampled to approximately 30 m spatial resolution.
+UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "blue", "green", "red" and "nir" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images also include "swir16" and "swir22" spectral bands and are resampled to approximately 30 m spatial resolution.
 
 This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset.
 
@@ -45,7 +45,7 @@ img.warp(
 # make sure to use these six spectral bands to get best performance
 csmask = CSmask(
     img=img.arr,
-    band_order=["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"],
+    band_order=["blue", "green", "red", "nir", "swir16", "swir22"],
     nodata_value=0,
 )
 
@@ -63,6 +63,7 @@ csmask_valid = Image(csmask.valid, transform=img.dataset.transform, crs=img.data
 csmask_csm.write_to_file("sentinel2_csm.tif", dtype="uint8", compress="PACKBITS")
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKBITS", kwargs={"nbits":2})
 ````
+
 ## Example (Landsat 8)
 Here's a similar example based on Landsat 8.
 
@@ -101,7 +102,7 @@ img = Image(data=L8_bands, crs = meta['crs'], transform = meta['transform'], dim
 img.dn2toa(
         platform=Platform.Landsat8,
         mtl_file=mtl_file,
-        wavelengths = ["Blue", "Green", "Red", "NIR", "SWIR1", "SWIR2"]
+        wavelengths = ["blue", "green", "red", "nir", "swir16", "swir22"]
 )
 # >> proceed by analogy with Sentinel 2 example
 ````
