@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.2.2] (2024-10-21)
+--------------------
+Added
+*******
+- expose onnxruntime execution provider
+
 [0.2.1] (2023-12-05)
 --------------------
 Added
