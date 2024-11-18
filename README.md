@@ -8,7 +8,7 @@
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/)
 [![DOI](https://zenodo.org/badge/328616234.svg)](https://zenodo.org/badge/latestdoi/328616234)
 
-UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works directly on Level-1C data (no atmospheric correction required). Images just need to be in Top Of Atmosphere (TOA) reflectance and include at least the "blue", "green", "red" and "nir" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images also include "swir16" and "swir22" spectral bands and are resampled to approximately 30 m spatial resolution.
+UKIS Cloud Shadow MASK (ukis-csmask) package masks clouds and cloud shadows in Sentinel-2, Landsat-9, Landsat-8, Landsat-7 and Landsat-5 images. Masking is performed with a pre-trained convolution neural network. It is fast and works with both Level-1C (no atmospheric correction) and Level-2A (atmospherically corrected) data. Images just need to be in reflectance and include at least the "blue", "green", "red" and "nir" spectral bands. Best performance (in terms of accuracy and speed) is achieved when images also include "swir16" and "swir22" spectral bands and are resampled to approximately 30 m spatial resolution.
 
 This [publication](https://doi.org/10.1016/j.rse.2019.05.022) provides further insight into the underlying algorithm and compares it to the widely used [Fmask](http://www.pythonfmask.org/en/latest/) algorithm across a heterogeneous test dataset.
 
@@ -23,8 +23,8 @@ If you use ukis-csmask in your work, please consider citing one of the above pub
 
 ![Examples](img/examples.png)
 
-## Example (Sentinel 2)
-Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [ukis-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with [numpy](https://numpy.org/) arrays.
+## Example (Sentinel-2 Level-1C)
+Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [ukis-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with [numpy](https://numpy.org/) arrays. Further examples can be found [here](examples).
 
 ````python
 from ukis_csmask.mask import CSmask
@@ -62,49 +62,6 @@ csmask_valid = Image(csmask.valid, transform=img.dataset.transform, crs=img.data
 # write results back to file
 csmask_csm.write_to_file("sentinel2_csm.tif", dtype="uint8", compress="PACKBITS")
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKBITS", kwargs={"nbits":2})
-````
-
-## Example (Landsat 8)
-Here's a similar example based on Landsat 8.
-
-````python
-import rasterio
-import numpy as np
-from ukis_csmask.mask import CSmask
-from ukis_pysat.raster import Image, Platform
-
-# set Landsat 8 source path and prefix (example)
-data_path = "/your_data_path/"
-L8_file_prefix = "LC08_L1TP_191015_20210428_20210507_02_T1"
-
-data_path = data_path+L8_file_prefix+"/"
-mtl_file  = data_path+L8_file_prefix+"_MTL.txt"
-
-# stack [B2:'Blue', B3:'Green', B4:'Red', B5:'NIR', B6:'SWIR1', B7:'SWIR2'] as numpy array
-L8_band_files  = [data_path+L8_file_prefix+'_B'+ x + '.TIF' for x in [str(x+2) for x in range(6)]]
-
-# >> adopted from https://gis.stackexchange.com/questions/223910/using-rasterio-or-gdal-to-stack-multiple-bands-without-using-subprocess-commands
-# read metadata of first file
-with rasterio.open(L8_band_files[0]) as src0:
-    meta = src0.meta
-# update meta to reflect the number of layers
-meta.update(count = len(L8_band_files))
-# read each layer and append it to numpy array
-L8_bands = []
-for id, layer in enumerate(L8_band_files, start=1):
-    with rasterio.open(layer) as src1:
-        L8_bands.append(src1.read(1))
-L8_bands = np.stack(L8_bands,axis=2)
-# <<
-
-img = Image(data=L8_bands, crs = meta['crs'], transform = meta['transform'], dimorder="last")
-
-img.dn2toa(
-        platform=Platform.Landsat8,
-        mtl_file=mtl_file,
-        wavelengths = ["blue", "green", "red", "nir", "swir16", "swir22"]
-)
-# >> proceed by analogy with Sentinel 2 example
 ````
 
 ## Installation

@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.0.0] (2024-11-XX)
+--------------------
+Added
+*******
+-support for L2A product level
+
+Changed
+*******
+- retrained all models with new architecture and training data
+- removed backwards compatibility with old band naming scheme
+
 [0.2.2] (2024-10-21)
 --------------------
 Added
