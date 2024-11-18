@@ -23,7 +23,7 @@ If you use ukis-csmask in your work, please consider citing one of the above pub
 
 ![Examples](img/examples.png)
 
-## Example (Sentinel-2 Level-1C)
+## Example
 Here's an example on how to compute a cloud and cloud shadow mask from an image. Please note that here we use [ukis-pysat](https://github.com/dlr-eoc/ukis-pysat) for convencience image handling, but you can also work directly with [numpy](https://numpy.org/) arrays. Further examples can be found [here](examples).
 
 ````python
@@ -32,8 +32,9 @@ from ukis_pysat.raster import Image, Platform
 
 # read Level-1C image from file, convert digital numbers to TOA reflectance
 # and make sure resolution is 30 m to get best performance
+band_order = ["blue", "green", "red", "nir", "swir16", "swir22"]
 img = Image(data="sentinel2.tif", dimorder="last")
-img.dn2toa(platform=Platform.Sentinel2)
+img.dn2toa(platform=Platform.Sentinel2, wavelength=band_order)
 img.warp(
     resampling_method=0,
     resolution=30,
@@ -45,7 +46,7 @@ img.warp(
 # make sure to use these six spectral bands to get best performance
 csmask = CSmask(
     img=img.arr,
-    band_order=["blue", "green", "red", "nir", "swir16", "swir22"],
+    band_order=band_order,
     nodata_value=0,
 )
 

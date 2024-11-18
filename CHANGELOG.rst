@@ -5,7 +5,8 @@ Changelog
 --------------------
 Added
 *******
--support for L2A product level
+- support for L2A product level
+- example notebooks
 
 Changed
 *******
