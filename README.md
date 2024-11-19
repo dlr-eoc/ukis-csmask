@@ -32,23 +32,14 @@ from ukis_pysat.raster import Image, Platform
 
 # read Level-1C image from file, convert digital numbers to TOA reflectance
 # and make sure resolution is 30 m to get best performance
+# NOTE: band_order must match the order of bands in the input image. it does not have to be in this explicit order.
 band_order = ["blue", "green", "red", "nir", "swir16", "swir22"]
 img = Image(data="sentinel2.tif", dimorder="last")
 img.dn2toa(platform=Platform.Sentinel2, wavelength=band_order)
-img.warp(
-    resampling_method=0,
-    resolution=30,
-    dst_crs=img.dataset.crs
-)
+img.warp(resampling_method=0,resolution=30,dst_crs=img.dataset.crs)
 
 # compute cloud and cloud shadow mask
-# NOTE: band_order must match the order of bands in the input image. it does not have to be in this explicit order.
-# make sure to use these six spectral bands to get best performance
-csmask = CSmask(
-    img=img.arr,
-    band_order=band_order,
-    nodata_value=0,
-)
+csmask = CSmask(img=img.arr, product_level="l1c", band_order=band_order, nodata_value=0)
 
 # access cloud and cloud shadow mask
 csmask_csm = csmask.csm
