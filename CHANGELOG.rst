@@ -7,6 +7,7 @@ Added
 *******
 - support for L2A product level
 - example notebooks
+- accuracy assessment and comparison with previous models
 
 Changed
 *******

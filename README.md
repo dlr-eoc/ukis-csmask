@@ -65,6 +65,15 @@ csmask_csm.write_to_file("sentinel2_csm.tif", dtype="uint8", compress="PACKBITS"
 csmask_valid.write_to_file("sentinel2_valid.tif", dtype="uint8", compress="PACKBITS", kwargs={"nbits":2})
 ````
 
+## Accuracy assessment
+The original ukis-csmask models, which are available in [ukis-csmask<=v0.2.2](https://github.com/dlr-eoc/ukis-csmask/releases/tag/v0.2.2) and are described in this [publication](https://doi.org/10.1016/j.rse.2019.05.022), have been trained and tested on a custom reference dataset specifically for Level-1C data. 
+
+From [ukis-csmask>=v1.0.0](https://github.com/dlr-eoc/ukis-csmask/releases/tag/v1.0.0) on, we provide new models for Level-1C (L1C) and Level-2A (L2A) data, which have been trained on a much larger reference dataset (consisting of [SPARCS](https://www.usgs.gov/landsat-missions/spatial-procedures-automated-removal-cloud-and-shadow-sparcs-validation-data), [CloudSEN12+](https://cloudsen12.github.io/) and some additional custom samples). Both datasets natively only provide L1C images. Therefore, we have compiled corresponding L2A images for each sample.
+
+![Accuracy](img/accuracy.png)
+
+Above barplot compares the new [ukis-csmask>=v1.0.0](https://github.com/dlr-eoc/ukis-csmask/releases/tag/v1.0.0) models against the previous [ukis-csmask<=v0.2.2](https://github.com/dlr-eoc/ukis-csmask/releases/tag/v0.2.2) models on [CloudSEN12+](https://cloudsen12.github.io/) and [SPARCS](https://www.usgs.gov/landsat-missions/spatial-procedures-automated-removal-cloud-and-shadow-sparcs-validation-data) test splits for both L1C and L2A images. The results indicate the superior performance of the new [ukis-csmask>=v1.0.0](https://github.com/dlr-eoc/ukis-csmask/releases/tag/v1.0.0) models against the previous [ukis-csmask<=v0.2.2](https://github.com/dlr-eoc/ukis-csmask/releases/tag/v0.2.2) models across all tested datasets and product levels. Providing separate models for each product level provides further improvements and enables greater flexibiliy.
+
 ## Installation
 The easiest way to install ukis-csmask is through pip. To install ukis-csmask with [default CPU provider](https://onnxruntime.ai/docs/execution-providers/) run the following.
 
