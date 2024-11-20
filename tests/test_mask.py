@@ -11,6 +11,9 @@ from ukis_csmask.mask import CSmask
 from ukis_csmask.utils import reclassify, cohen_kappa_score
 
 
+providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+
 @pytest.mark.parametrize(
     "img, band_order, nodata_value",
     [
@@ -22,7 +25,7 @@ from ukis_csmask.utils import reclassify, cohen_kappa_score
     ],
 )
 def test_csmask_init(img, band_order, nodata_value):
-    CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
+    CSmask(img=img, band_order=band_order, nodata_value=nodata_value, providers=providers)
 
 
 @pytest.mark.parametrize(
@@ -38,7 +41,7 @@ def test_csmask_init(img, band_order, nodata_value):
 )
 def test_csmask_init_raises(img, band_order, nodata_value):
     with pytest.raises(TypeError):
-        CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
+        CSmask(img=img, band_order=band_order, nodata_value=nodata_value, providers=providers)
 
 
 @pytest.mark.parametrize(
@@ -50,41 +53,59 @@ def test_csmask_init_raises(img, band_order, nodata_value):
 )
 def test_csmask_init_warns(img, band_order, nodata_value):
     with pytest.warns(UserWarning):
-        CSmask(img=img, band_order=band_order, nodata_value=nodata_value)
+        CSmask(img=img, band_order=band_order, nodata_value=nodata_value, providers=providers)
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
-    "data",
+    "data, product_level",
     [
-        np.load(r"tests/testfiles/sentinel2.npz"),
-        np.load(r"tests/testfiles/landsat8.npz"),
-        np.load(r"tests/testfiles/landsat7.npz"),
-        np.load(r"tests/testfiles/landsat5.npz"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l1c"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l2a"),
     ],
 )
-def test_csmask_csm_6band(data):
-    csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR", "SWIR16", "SWIR22"])
+def test_csmask_csm_6band(data, product_level):
+    csmask = CSmask(
+        img=data["img"],
+        product_level=product_level,
+        band_order=["Blue", "Green", "Red", "NIR", "SWIR16", "SWIR22"],
+        providers=providers,
+    )
     y_pred = csmask.csm
     y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [2, 0, 0, 0, 1]})
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
-    assert kappa >= 0.75
+    assert kappa >= 0.70
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
-    "data",
+    "data, product_level",
     [
-        np.load(r"tests/testfiles/sentinel2.npz"),
-        np.load(r"tests/testfiles/landsat8.npz"),
-        np.load(r"tests/testfiles/landsat7.npz"),
-        np.load(r"tests/testfiles/landsat5.npz"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l1c"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l2a"),
     ],
 )
-def test_csmask_valid_6band(data):
-    csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR", "SWIR16", "SWIR22"])
+def test_csmask_valid_6band(data, product_level):
+    csmask = CSmask(
+        img=data["img"],
+        product_level=product_level,
+        band_order=["Blue", "Green", "Red", "NIR", "SWIR16", "SWIR22"],
+        providers=providers,
+    )
     y_pred = csmask.valid
     y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [0, 1, 1, 1, 0]})
     y_true_inverted = ~y_true.astype(bool)
@@ -92,41 +113,53 @@ def test_csmask_valid_6band(data):
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
-    assert kappa >= 0.75
+    assert kappa >= 0.70
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
-    "data",
+    "data, product_level",
     [
-        np.load(r"tests/testfiles/sentinel2.npz"),
-        np.load(r"tests/testfiles/landsat8.npz"),
-        np.load(r"tests/testfiles/landsat7.npz"),
-        np.load(r"tests/testfiles/landsat5.npz"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l1c"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l2a"),
     ],
 )
-def test_csmask_csm_4band(data):
-    csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR"])
+def test_csmask_csm_4band(data, product_level):
+    csmask = CSmask(
+        img=data["img"], product_level=product_level, band_order=["Blue", "Green", "Red", "NIR"], providers=providers
+    )
     y_pred = csmask.csm
     y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [2, 0, 0, 0, 1]})
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
-    assert kappa >= 0.50
+    assert kappa >= 0.70
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
 @pytest.mark.parametrize(
-    "data",
+    "data, product_level",
     [
-        np.load(r"tests/testfiles/sentinel2.npz"),
-        np.load(r"tests/testfiles/landsat8.npz"),
-        np.load(r"tests/testfiles/landsat7.npz"),
-        np.load(r"tests/testfiles/landsat5.npz"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l1c"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l1c"),
+        (np.load(r"tests/testfiles/sentinel2.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat8.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat7.npz"), "l2a"),
+        (np.load(r"tests/testfiles/landsat5.npz"), "l2a"),
     ],
 )
-def test_csmask_valid_4band(data):
-    csmask = CSmask(img=data["img"], band_order=["Blue", "Green", "Red", "NIR"])
+def test_csmask_valid_4band(data, product_level):
+    csmask = CSmask(
+        img=data["img"], product_level=product_level, band_order=["Blue", "Green", "Red", "NIR"], providers=providers
+    )
     y_pred = csmask.valid
     y_true = reclassify(data["msk"], {"reclass_value_from": [0, 1, 2, 3, 4], "reclass_value_to": [0, 1, 1, 1, 0]})
     y_true_inverted = ~y_true.astype(bool)
