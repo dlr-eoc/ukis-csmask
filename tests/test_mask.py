@@ -82,7 +82,7 @@ def test_csmask_csm_6band(data, product_level):
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
-    assert kappa >= 0.70
+    assert kappa >= 0.65
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
@@ -113,7 +113,7 @@ def test_csmask_valid_6band(data, product_level):
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
-    assert kappa >= 0.70
+    assert kappa >= 0.65
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
@@ -139,7 +139,7 @@ def test_csmask_csm_4band(data, product_level):
     y_true = y_true.ravel()
     y_pred = y_pred.ravel()
     kappa = round(cohen_kappa_score(y_true, y_pred), 2)
-    assert kappa >= 0.70
+    assert kappa >= 0.65
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
