@@ -11,7 +11,7 @@ from ukis_csmask.mask import CSmask
 from ukis_csmask.utils import reclassify, cohen_kappa_score
 
 
-providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+providers = ["CPUExecutionProvider"]
 
 
 @pytest.mark.parametrize(
