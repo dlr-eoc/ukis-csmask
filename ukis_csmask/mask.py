@@ -195,6 +195,6 @@ class CSmask:
 
         if self.nodata_value is not None:
             # add image nodata pixels to valid pixel mask
-            valid[(self.img[:, :, 0] == self.nodata_value)] = 0
+            valid[np.all(self.img == self.nodata_value, axis=2)] = 0
 
         return valid
