@@ -1,0 +1,50 @@
+{
+    "data": {
+        "in_channels": 4,
+        "classes": 3,
+        "class_weights": [
+            0.45997971296310425,
+            1.6431068181991577,
+            4.600073337554932
+        ],
+        "dataset_statistics": {
+            "img": [
+                [
+                    0.27552253007888794,
+                    0.2556644380092621,
+                    0.269801527261734,
+                    0.33431220054626465
+                ],
+                [
+                    0.24488002061843872,
+                    0.22757470607757568,
+                    0.2537152171134949,
+                    0.23213787376880646
+                ]
+            ],
+            "band_names": [
+                "blue",
+                "green",
+                "red",
+                "nir"
+            ],
+            "cnt_classes": [
+                168881375,
+                47277517,
+                16887124
+            ]
+        },
+        "target_size": [
+            256,
+            256
+        ]
+    },
+    "model": {
+		"version": "1.0.0-4BL1C",
+        "decoder_name": "unet",
+        "encoder_name": "efficientnet-b4",
+        "encoder_weights": "imagenet",
+        "loss_fn": "celovasz",
+        "multi-task": false
+    }
+}

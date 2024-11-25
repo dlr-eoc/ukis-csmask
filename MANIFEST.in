@@ -1,5 +1,11 @@
 include requirements.txt
 include README.md
 include LICENSE
-include ukis_csmask/model_4b.onnx
-include ukis_csmask/model_6b.onnx
+include ukis_csmask/model_4b_l1c.onnx
+include ukis_csmask/model_4b_l1c.json
+include ukis_csmask/model_4b_l2a.onnx
+include ukis_csmask/model_4b_l2a.json
+include ukis_csmask/model_6b_l1c.onnx
+include ukis_csmask/model_6b_l1c.json
+include ukis_csmask/model_6b_l2a.onnx
+include ukis_csmask/model_6b_l2a.json
