@@ -106,6 +106,12 @@ class CSmask:
         self.batch_size = batch_size
         self.model_version = model_dict["model"]["version"]
 
+        self.nodata_mask = np.ones(shape=(img.shape[0], img.shape[1], 1), dtype=np.uint8)
+        if self.nodata_value is not None:
+            # create image nodata mask
+            # needs to happen before normalization
+            self.nodata_mask[np.all(img == self.nodata_value, axis=2)] = 0
+
         # adjust band order and normalize image
         self.img = self.normalize(
             img=self.adjust_band_order(
@@ -188,13 +194,13 @@ class CSmask:
         class_dict = {"reclass_value_from": [0, 1, 2], "reclass_value_to": [1, 0, 0]}
         valid = reclassify(self.csm, class_dict)
 
+        if self.nodata_value is not None:
+            # add image nodata pixels to valid pixel mask
+            valid[self.nodata_mask == self.nodata_value] = 0
+
         # dilate the inverse of the binary valid pixel mask (invalid=0)
         # this effectively buffers the invalid pixels
         valid_i = ~valid.astype(bool)
         valid = (~scipy.ndimage.binary_dilation(valid_i, iterations=invalid_buffer).astype(bool)).astype(np.uint8)
-
-        if self.nodata_value is not None:
-            # add image nodata pixels to valid pixel mask
-            valid[np.all(self.img == self.nodata_value, axis=2)] = 0
 
         return valid
