@@ -1,6 +1,23 @@
 Changelog
 =========
 
+[1.0.0] (2024-11-XX)
+--------------------
+Added
+*******
+- support for L2A product level
+- example notebooks
+- accuracy assessment and comparison with previous models
+
+Changed
+*******
+- retrained all models with new architecture and training data
+- removed backwards compatibility with old band naming scheme
+
+Fixed
+*******
+- nodata selection across all bands
+
 [0.2.2] (2024-10-21)
 --------------------
 Added
