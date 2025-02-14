@@ -1,7 +1,7 @@
 Changelog
 =========
 
-[1.0.0] (2024-11-XX)
+[1.0.0] (2025-02-14)
 --------------------
 Added
 *******
@@ -13,6 +13,7 @@ Changed
 *******
 - retrained all models with new architecture and training data
 - removed backwards compatibility with old band naming scheme
+- updated pypi publisher
 
 Fixed
 *******
