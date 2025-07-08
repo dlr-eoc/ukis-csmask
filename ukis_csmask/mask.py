@@ -1,12 +1,12 @@
-import warnings
-
 import json
 import numpy as np
 import scipy
+import warnings
 
 from pathlib import Path
+from typing import List, Optional, Union
 
-from .utils import reclassify, tile_array, untile_array
+from .utils import reclassify, TileGenerator
 
 try:
     import onnxruntime
@@ -24,15 +24,15 @@ class CSmask:
 
     def __init__(
         self,
-        img,
-        band_order,
-        product_level="l1c",
-        nodata_value=None,
-        invalid_buffer=4,
-        intra_op_num_threads=0,
-        inter_op_num_threads=0,
-        providers=None,
-        batch_size=1,
+        img: np.ndarray,
+        band_order: List[str],
+        product_level: str = "l1c",
+        nodata_value: Optional[Union[int, float]] = None,
+        invalid_buffer: int = 4,
+        intra_op_num_threads: int = 0,
+        inter_op_num_threads: int = 0,
+        providers: Optional[List[str]] = None,
+        batch_size: int = 1,
     ):
         """
         :param img: Input satellite image of shape (rows, cols, bands). (ndarray).
@@ -128,13 +128,13 @@ class CSmask:
         self.valid = self._valid(invalid_buffer)
 
     @staticmethod
-    def normalize(img, mean, std):
+    def normalize(img: np.ndarray, mean: Union[float, np.ndarray], std: Union[float, np.ndarray]) -> np.ndarray:
         img -= mean
         img /= std
         return img
 
     @staticmethod
-    def adjust_band_order(img, source_band_order, target_band_order):
+    def adjust_band_order(img: np.ndarray, source_band_order: List[str], target_band_order: List[str]) -> np.ndarray:
         if all(elem in source_band_order for elem in target_band_order) is False:
             raise TypeError(f"model_file requires the following image band_order {target_band_order}")
         idx = np.array(
@@ -146,43 +146,39 @@ class CSmask:
         return img[:, :, idx]
 
     @staticmethod
-    def batch(iterable, batch_size=1):
-        length = len(iterable)
-        for ndx in range(0, length, batch_size):
-            yield iterable[ndx : min(ndx + batch_size, length)]
-
-    @staticmethod
-    def softmax(logits):
+    def softmax(logits: np.ndarray) -> np.ndarray:
         return scipy.special.softmax(logits, axis=1)
 
-    def _csm(self):
+    def _csm(self) -> np.ndarray:
         """Computes cloud and cloud shadow mask with following class ids: 0=background, 1=clouds, 2=cloud shadows.
 
         :returns: cloud and cloud shadow mask. (ndarray).
         """
-        # tile array
-        x = np.moveaxis(tile_array(self.img, xsize=self.target_size[0], ysize=self.target_size[1], overlap=0.2), -1, 1)
-
-        # predict on array tiles
-        y_prob = np.moveaxis(
-            np.concatenate(
-                [
-                    self.softmax(self.session.run(None, {self.input_names: batch})[0])
-                    for batch in self.batch(x, batch_size=self.batch_size)
-                ]
-            ),
-            1,
-            -1,
+        # tile image array
+        tg = TileGenerator(
+            array=self.img,
+            xsize=self.target_size[0],
+            ysize=self.target_size[1],
+            overlap=0.2,
+            batch_size=self.batch_size,
         )
 
-        # untile probabilities with smooth blending
-        y_prob = untile_array(
-            y_prob, (self.img.shape[0], self.img.shape[1], y_prob.shape[3]), overlap=0.2, smooth_blending=True
-        )
+        # predict in batches on tiles
+        batches, positions = [], []
+        for batch, position in tg.tile_array():
+            batches.append(
+                np.moveaxis(
+                    self.softmax(self.session.run(None, {self.input_names: np.moveaxis(batch, -1, 1)})[0]), 1, -1
+                )
+            )
+            positions.append(position)
+
+        # untile predictions with smooth blending
+        y_prob = tg.untile_array(batches=batches, positions=positions, smooth_blending=True)
 
         return np.expand_dims(np.argmax(y_prob, axis=2).astype(np.uint8), axis=-1)
 
-    def _valid(self, invalid_buffer):
+    def _valid(self, invalid_buffer: int) -> np.ndarray:
         """Converts the cloud and cloud shadow mask into a binary valid mask with following class ids:
         0=invalid (clouds, cloud shadows, nodata), 1=valid (rest). Invalid pixels are buffered to reduce effect of
         cloud and cloud shadow fuzzy boundaries. If CSmask was initialized with nodata_value it will be added to the

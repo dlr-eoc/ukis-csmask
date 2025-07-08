@@ -1,6 +1,17 @@
 Changelog
 =========
 
+
+[1.0.1] (2025-07-08)
+--------------------
+Added
+*******
+- typehints
+
+Changed
+*******
+- substituted tile_array and untile_array methods with simpler and more efficient TileGenerator class
+
 [1.0.0] (2025-02-14)
 --------------------
 Added
