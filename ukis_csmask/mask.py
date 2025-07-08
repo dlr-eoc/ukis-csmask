@@ -159,7 +159,7 @@ class CSmask:
             array=self.img,
             xsize=self.target_size[0],
             ysize=self.target_size[1],
-            overlap=0.2,
+            overlap=0.1,
             batch_size=self.batch_size,
         )
 
